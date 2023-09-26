@@ -181,6 +181,6 @@ product equivalency.
 
 #### Appendix
 
-• The code used for data collection and extraction can be found in the provided google colab
-link: product_comparision_llm.ipynb
-• Additional data samples are saved as json file. Will present based on request
+* The code used for data collection and extraction can be found in the provided google colab
+  link: [product_comparison_llm.ipynb](https://colab.research.google.com/drive/1N4BqINdOmxokVfmGYeAJa01J7ynrkwLB?usp=sharing)
+* Additional data samples are saved as json file. Will present based on request
