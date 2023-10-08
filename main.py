@@ -28,7 +28,8 @@ for i in range(0, 5):
         body = {
             "model": "meta-llama/Llama-2-13b-chat-hf",
             "messages": [
-                {"role": "system", "content": "You are an expert in NLP and understanding the json data of products. Take a deep breath before you start."},
+                {"role": "system",
+                 "content": "You are an expert in NLP and understanding the json data of products. Take a deep breath before you start."},
                 {"role": "user", "content": user_content}
             ],
             "temperature": 0.5
