@@ -28,8 +28,8 @@ product_url_list = [
 ]
 
 
-def scrapeops_url(url):
-    payload = {'api_key': SCRAPEOPS_API_KEY, 'url': url, 'country': 'us'}
+def scrapeops_url(url_to_scrape):
+    payload = {'api_key': SCRAPEOPS_API_KEY, 'url': url_to_scrape, 'country': 'us'}
     proxy_url = 'https://proxy.scrapeops.io/v1/?' + urlencode(payload)
     return proxy_url
 

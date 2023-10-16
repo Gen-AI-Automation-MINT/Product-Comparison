@@ -179,3 +179,7 @@ fabric.properties
 # .idea
 
 .streamlit/secrets.toml
+
+input_files
+output_files
+chromedriver.exe
