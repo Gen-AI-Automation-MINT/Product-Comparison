@@ -39,21 +39,6 @@ def get_walmart_url_list():
         return walmart_url_list
 
 
-def get_walmart_soup_old(url: str) -> (BeautifulSoup, dict):
-    # options = webdriver.ChromeOptions()
-    # options.add_argument('--headless')
-    # options.add_argument('--no-sandbox')
-    print(f"Scraping Walmart URL: {url}")
-    # with uc.Chrome(options=options, version_main=114) as driver:
-    #     driver.get(url)
-    #     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    driver = Driver(uc=True)
-    driver.get(url)
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
-    driver.quit()
-    return soup
-
-
 def get_walmart_soup(url: str, driver_type: str = 'undetected') -> BeautifulSoup:
     print(f"Scraping Walmart URL: {url}")
     if driver_type == 'uc':
@@ -103,9 +88,6 @@ def check_walmart_url_status(soup: BeautifulSoup):
 
 def extract_breadcrumbs(soup: BeautifulSoup, blob: dict) -> str:
     breadcrumbs = soup.find("ol", class_="w_4HBV")
-    # n_breadcrumbs = blob["props"]["pageProps"]["initialData"]["data"]["contentLayout"]["pageMetadata"]["pageContext"][
-    #     "itemContext"].get("categoryPathName")
-    # print(n_breadcrumbs)
     if breadcrumbs is None:
         return "No Breadcrumbs Found"
     else:
@@ -123,7 +105,7 @@ def extract_product_data(soup: BeautifulSoup, blob: dict, url) -> dict:
         'brand': raw_product_data.get('brand'),
         'manufacturerName': raw_product_data.get('manufacturerName'),
         'shortDescription': raw_product_data.get('shortDescription'),
-        'specifications': json_blob["props"]["pageProps"]["initialData"]["data"]['idml'].get(
+        'specifications': blob["props"]["pageProps"]["initialData"]["data"]['idml'].get(
             'specifications'),
     })
     return blob_product_data

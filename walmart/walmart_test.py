@@ -12,7 +12,7 @@ walmart_urls = ['https://www.walmart.com/ip/999541784?selected=true',
 
 if __name__ == "__main__":
     walmart_url = walmart_urls[5]
-    soup_data = get_walmart_soup(walmart_url)
+    soup_data = get_walmart_soup(walmart_url, driver_type='uc')
     page_status_, json_blob = check_walmart_url_status(soup_data)
     if page_status_ == 200:
         breadcrumbs_text = extract_breadcrumbs(soup_data, json_blob)
