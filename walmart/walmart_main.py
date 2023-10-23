@@ -41,9 +41,9 @@ def get_walmart_soup(url: str, driver_type: str = 'uc') -> BeautifulSoup:
         options = webdriver.ChromeOptions()
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
-        driver = uc.Chrome(options=options, version_main=114)
+        driver = uc.Chrome(options=options, version_main=114, enable_cdp_events=True)
     elif driver_type == 'sb':
-        driver = Driver(uc=True)
+        driver = Driver(uc=True, headless=True)
     else:
         raise ValueError("Invalid driver type. Use 'undetected' or 'seleniumbase'.")
 

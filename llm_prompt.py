@@ -30,31 +30,35 @@ def prompt_generator(walmart_product, amazon_product):
     """.strip()
 
     user_content3 = f"""
-        "Using the provided JSON data, compare the attributes of two products from Walmart (WM) and a competitor (Comp).
-        **Provided Data**:
+        "Using the provided JSON data, compare the attributes of two products from Walmart and a Amazon.
+        Here is the Provided Data to you:
         - Walmart Product: {walmart_product}
         - Amazon Product: {amazon_product}
-        **Comparison Criteria**:
-        - **Exact Match**: Both products have the exact same attribute.
-        - **Not Sure Match**:
-            - Examine all listed attributes in both WM and Comp.
+        Carefully examine the attributes of both products and determine the match type
+        Comparison Criteria:
+        - Exact Match: Both products have the exact same all the attribute.
+        - Not Sure Match:
+            - Examine all listed attributes in both Walmart Product and Amazon Product.
             - If 2 or more values are absent in either, flag the match type as "Not Sure".
-        - **Incorrect Match**:
-            - Disregard values from the Brand and Title.
+        - Incorrect Match:
+            - Flag as Incorrect as soon as you find a mismatch in any of the attributes.
+            - Disregard values from the Brand and Title. (Title of both products are mismatched)
             - Focus on mismatches in Model, Size, Color, Pack/Count between WM & Comp.
             - If 2 or more attributes mismatch: Flag as "Strong Incorrect".
             - If fewer than 2 attributes mismatch: Flag as "Weak Incorrect".
-        **Example Output**:
+        Example Output:
         ```json
         {{"walmart_product_id": "000",
           "amazon_product_id": "000",
-          "match_type": "Exact Match"
+          "match_type": ""
         }}
         ```
-        **Note**: Provide a singular match type for the entire product comparison, rather than individual attributes. Your response should be in JSON format.
+        Note: Provide a match type for the entire product comparison, rather than for individual attributes. Your response should be in JSON format.
+        Remember: YOU SHOULD CHECK USING COMPARISON CRITERIA AND GENERATE THE JSON DATA.
+        You do not need to give the explanation for the match type.
     """.strip()
 
-    message_role_content = "You are an expert understanding the JSON data. I am conducting an Product comparison. Take a deep breath before you start. YOUR RESPONSE WILL BE ONLY IN THE FORM OF JSON DATA."
+    message_role_content = "You are a JSON data specialist. I'm conducting a product comparison. Please respond solely in JSON format."
 
     return user_content3, message_role_content
 
@@ -73,6 +77,6 @@ if __name__ == "__main__":
     amazon_json_path = "./amazon/amazon_data.json"
     walmart_json_path = "./walmart/walmart_data.json"
     amazon_data, walmart_data = get_products_data_from_json(amazon_json_path, walmart_json_path, 0)
-    user_content, message_role_content = prompt_generator(amazon_data, walmart_data)
+    user_content, message_role_content_ = prompt_generator(amazon_data, walmart_data)
     print(user_content)
-    print(message_role_content)
+    print(message_role_content_)

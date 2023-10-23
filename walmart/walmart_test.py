@@ -15,9 +15,3 @@ def process_walmart_url(walmart_url):
         w_product_data = generate_error_data(walmart_url, w_page_status_)
         print(w_product_data)
     return w_product_data
-
-
-if __name__ == "__main__":
-    walmart_url_ = "https://www.walmart.com/ip/997560727?selected=true"
-    print("Test Scraping Started\n")
-    process_walmart_url(walmart_url_)

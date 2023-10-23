@@ -1,6 +1,7 @@
 import requests
 import config
 import json
+import re
 from test_data import amazon_url_list_404, walmart_url_list_404, walmart_url_list_inc, amazon_url_list_inc, \
     walmart_url_list_exa, amazon_url_list_exa
 from process_urls import scrape_both
@@ -36,7 +37,7 @@ def conduct_product_comparison(amazon_product, walmart_product):
              "content": f"{message_role_content}"},
             {"role": "user", "content": user_content}
         ],
-        "temperature": 0.5
+        "temperature": 0.1
     }
 
     try:
@@ -55,13 +56,29 @@ def conduct_product_comparison(amazon_product, walmart_product):
         return f"Error: {str(e)}"
 
 
+def extract_json_from_string(s):
+    pattern = r"\{.*?\}"
+    match = re.search(pattern, s, re.DOTALL)  # re.DOTALL makes . match newline as well
+
+    if match:
+        json_str = match.group()
+        return json.loads(json_str)
+    return None
+
+
 if __name__ == "__main__":
-    amazon_urls = amazon_url_list_inc
-    walmart_urls = walmart_url_list_inc
-    amazon_index = walmart_index = 2
+    amazon_urls = amazon_url_list_exa
+    walmart_urls = walmart_url_list_exa
+    amazon_index = walmart_index = 4
     amazon_data, walmart_data = scrape_both(amazon_urls, walmart_urls, amazon_index, walmart_index)
     # amazon_data, walmart_data = get_products_data_from_json(amazon_json_path, walmart_json_path, amazon_index)
+
+    if amazon_data.get('url_status') != '200' and walmart_data.get('url_status') != '200':
+        print("Both URLs are not valid")
+        exit(1)
     response_content, usage = conduct_product_comparison(amazon_data, walmart_data)
-    print("LLM Response: ", response_content)
+    print("LLM Response: \n", response_content)
+    result = extract_json_from_string(response_content)
+    print("Result:", result)
     formated_usage = f"Prompt Tokens: {usage['prompt_tokens']} | Completion Tokens: {usage['completion_tokens']} | Total Tokens: {usage['total_tokens']}"
     print("Usage: ", formated_usage)
