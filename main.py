@@ -23,7 +23,8 @@ def compare_products_n(product_a, product_b):
     similarity_score = 0.0
 
     # Product Name Matching
-    similarity_score += 2 * get_cosine_sim_n(product_a["name"], product_b["name"])
+    if product_a["name"] and product_b["name"]:
+        similarity_score += 2 * get_cosine_sim_n(product_a["name"], product_b["name"])
 
     if product_a["specifications"] and product_b["specifications"]:
         spec_a_ = ' '.join([item["value"] for item in product_a["specifications"]])
