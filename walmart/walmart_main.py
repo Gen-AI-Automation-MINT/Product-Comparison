@@ -18,24 +18,12 @@ import pandas as pd
 import json
 from lxml import etree
 import re
+from test_data import amazon_url_list_404, walmart_url_list_404, walmart_url_list_inc, amazon_url_list_inc, \
+    walmart_url_list_exa, amazon_url_list_exa
 
 from seleniumbase import Driver
 
 output_file_no_duplicates = "../output_files/output_file_no_duplicates.csv"
-
-walmart_urls = ['https://www.walmart.com/ip/999541784?selected=true',
-                "https://www.walmart.com/ip/996900990?selected=true",
-                "https://www.walmart.com/ip/925123195?selected=true",
-                "https://www.walmart.com/ip/314409680?selected=true",
-                "https://www.walmart.com/ip/158741871?selected=true",
-                "https://www.walmart.com/ip/109999521?selected=true",
-                "https://www.walmart.com/ip/755983708?selected=true"]
-
-PROBLEMATIC_TITLES = {
-    "Prints Builder | Walmart Photo",
-    "Walmart.com | Save Money. Live Better",
-    "Request Rejected"
-}
 
 
 def get_walmart_url_list():
@@ -47,7 +35,7 @@ def get_walmart_url_list():
         return walmart_url_list
 
 
-def get_walmart_soup(url: str, driver_type: str = 'undetected') -> BeautifulSoup:
+def get_walmart_soup(url: str, driver_type: str = 'uc') -> BeautifulSoup:
     print(f"\n\nScraping Walmart URL: {url}")
     if driver_type == 'uc':
         options = webdriver.ChromeOptions()
@@ -71,6 +59,12 @@ def get_walmart_soup(url: str, driver_type: str = 'undetected') -> BeautifulSoup
 def check_walmart_url_status(soup: BeautifulSoup):
     title = soup.find("title")
     page_status = 0
+
+    PROBLEMATIC_TITLES = {
+        "Prints Builder | Walmart Photo",
+        "Walmart.com | Save Money. Live Better",
+        "Request Rejected"
+    }
     script_tag = soup.find("script", {"id": "__NEXT_DATA__"})
     json_blob_data = {}
     if script_tag:
@@ -88,8 +82,8 @@ def check_walmart_url_status(soup: BeautifulSoup):
         print("Automated Traffic Detected")
         page_status = 999
     else:
-        print("Walmart Page Valid")
         page_status = 200
+        print(f"Title: {title.text.strip()}")
 
     return page_status, json_blob_data
 
@@ -100,8 +94,32 @@ def extract_breadcrumbs(soup: BeautifulSoup, blob: dict) -> str:
         return "No Breadcrumbs Found"
     else:
         b_text = breadcrumbs.text.strip()
-        print(b_text)
+        print(f"Breadcrumbs: {b_text}")
         return b_text
+
+
+def is_exclusive(soup: BeautifulSoup) -> bool:
+    searched_words = [
+        'Walmart Exclusive',
+        'Exclusively at Walmart',
+        'Exclusively for Walmart',
+        'Exclusive to Walmart',
+        'exclusively at Walmart',
+        'Only at Walmart',
+        'Only available at Walmart and Walmart.com',
+        'WALMART EXCLUSIVE',
+        'exclusive to Walmart',
+        'Walmart-Exclusive',
+        'Walmart exclusive',
+    ]
+
+    for word in searched_words:
+        regex = re.compile(f'.*{word}.*', re.IGNORECASE)
+        found = soup.find_all(string=regex, recursive=True)
+        if found:
+            return True
+
+    return False
 
 
 def format_short_description(description):
@@ -117,26 +135,31 @@ def format_short_description(description):
 
 
 def extract_product_data(soup: BeautifulSoup, blob: dict, url) -> dict:
-    raw_product_data = blob["props"]["pageProps"]["initialData"]["data"]["product"]
+    raw_product_data = blob.get("props", {}).get("pageProps", {}).get("initialData", {}).get("data", {}).get("product",
+                                                                                                             {})
+    title = raw_product_data.get('name', '')
+    if raw_product_data.get('shortDescription'):
+        formatted_description = format_short_description(raw_product_data.get('shortDescription'))
+    else:
+        formatted_description = []
+    idml_data = blob.get("props", {}).get("pageProps", {}).get("initialData", {}).get("data", {}).get('idml', {})
+    specification_blob = idml_data.get('specifications')
+    if specification_blob:
+        formatted_specifications = [{"key": item.get("name", ""), "value": item.get("value", "")} for item in
+                                    specification_blob]
+    else:
+        formatted_specifications = []
     product_id = re.search(r'/ip/(\d+)\?', url).group(1)
-    formatted_description = format_short_description(raw_product_data.get('shortDescription'))
-    specification_blob = blob["props"]["pageProps"]["initialData"]["data"]['idml'].get('specifications')
-    formatted_specifications = [{"key": item["name"], "value": item["value"]} for item in specification_blob]
-    description_data = []
-    for i in formatted_description:
-        description_data.append(i)
     blob_product_data = ({
         'id': product_id,
         'url': url,
         'url_status': '200',
         'type': raw_product_data.get('type'),
-        'name': raw_product_data.get('name'),
+        'name': title,
         'brand': raw_product_data.get('brand'),
         'manufacturerName': raw_product_data.get('manufacturerName'),
-        'shortDescription': description_data,
-        'specifications': blob["props"]["pageProps"]["initialData"]["data"]['idml'].get(
-            'specifications'),
-        'formatted_specifications': formatted_specifications,
+        'shortDescription': formatted_description,
+        'specifications': formatted_specifications,
     })
     return blob_product_data
 
@@ -170,17 +193,18 @@ def generate_error_data(w_url, status):
 
 
 if __name__ == "__main__":
-    print("Scraping Started\n")
-    walmart_url = "https://www.walmart.com/ip/314409680?selected=true"
-    # for walmart_url in walmart_urls:
-    soup_data = get_walmart_soup(walmart_url, driver_type='uc')
-    page_status_, json_blob = check_walmart_url_status(soup_data)
-    if page_status_ == 200:
-        breadcrumbs_text = extract_breadcrumbs(soup_data, json_blob)
-        product_data = extract_product_data(soup_data, json_blob, walmart_url)
-        print(product_data)
-    else:
-        product_data = generate_error_data(walmart_url, page_status_)
-        print(product_data)
+    print("Walmart Scraping Started\n")
+    scrape_list = walmart_url_list_inc
+    print(f"Scraping {len(scrape_list)} URLs\n ")
+    for walmart_url in scrape_list:
+        soup_data = get_walmart_soup(walmart_url, driver_type='sb')
+        page_status_, json_blob = check_walmart_url_status(soup_data)
+        if page_status_ == 200:
+            breadcrumbs_text = extract_breadcrumbs(soup_data, json_blob)
+            product_data = extract_product_data(soup_data, json_blob, walmart_url)
+            print(product_data)
+        else:
+            product_data = generate_error_data(walmart_url, page_status_)
+            print(product_data)
 
-    push_the_data_to_json(product_data)
+        push_the_data_to_json(product_data)

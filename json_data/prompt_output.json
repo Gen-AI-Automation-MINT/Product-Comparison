@@ -1,0 +1,21 @@
+{
+  'id': 'meta-llama/Llama-2-7b-chat-hf-f1fde21036c9285bbbc2e4cfd3e4b763',
+  'object': 'text_completion',
+  'created': 1698067848,
+  'model': 'meta-llama/Llama-2-7b-chat-hf',
+  'choices': [
+    {
+      'message': {
+        'role': 'assistant',
+        'content': ' '
+      },
+      'index': 0,
+      'finish_reason': 'stop'
+    }
+  ],
+  'usage': {
+    'prompt_tokens': 46,
+    'completion_tokens': 594,
+    'total_tokens': 640
+  }
+}

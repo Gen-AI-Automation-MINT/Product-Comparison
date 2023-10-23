@@ -18,7 +18,7 @@ from lxml import etree
 from seleniumbase import Driver
 import requests
 import re
-from typing import Optional
+from typing import Optional, Dict, Tuple
 from test_data import amazon_url_list_404, walmart_url_list_404, walmart_url_list_inc, amazon_url_list_inc, \
     walmart_url_list_exa, amazon_url_list_exa
 
@@ -28,28 +28,6 @@ custom_headers = {
 }
 
 output_file_no_duplicates = "../output_files/output_file_no_duplicates.csv"
-
-amazon_url_list = [
-    "https://www.amazon.com/dp/B075NSQ7LY?th=1&psc=1",
-    "https://www.amazon.com/dp/B089GMJ8RS?th=1&psc=1",
-    "https://www.amazon.com/dp/B07L2MW2VK?th=1&psc=1",
-    "https://www.amazon.com/dp/B00K1PBYKE?th=1&psc=1",
-    "https://www.amazon.com/dp/B00L76QUAK?th=1&psc=1",
-    "https://www.amazon.com/dp/B072BC9LQG?th=1&psc=1",
-    "https://www.amazon.com/dp/B089SPJZJW?th=1&psc=1",
-    "https://www.amazon.com/dp/B07Q8RTRW3?th=1&psc=1",
-    "https://www.amazon.com/dp/B099K1DP9P?th=1&psc=1",
-    "https://www.amazon.com/dp/B00IKVS79C?th=1&psc=1",
-    "https://www.amazon.com/dp/B00OEJZKIK?th=1&psc=1",
-    "https://www.amazon.com/dp/B0B3XRT96M?th=1&psc=1",
-    "https://www.amazon.com/dp/B007YT34VM?th=1&psc=1",
-    "https://www.amazon.com/dp/B07VVMHHMP?th=1&psc=1",
-    "https://www.amazon.com/dp/B00745BUGW?th=1&psc=1",
-    "https://www.amazon.com/dp/B00B37ERSU?th=1&psc=1",
-    "https://www.amazon.com/dp/B07MY8PWHN?th=1&psc=1",
-    "https://www.amazon.com/dp/B08YZBK7N5?th=1&psc=1",
-    "https://www.amazon.com/dp/B07SQL5L8W?th=1&psc=1",
-]
 
 STATUS_MAP = {
     0: "0",
@@ -73,10 +51,11 @@ def get_amazon_soup(url: str, driver_type: str = 're') -> BeautifulSoup:
     print(f"\n\nScraping Amazon URL: {url}")
 
     if driver_type == 'uc':
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
-        options.add_argument('--no-sandbox')
-        with uc.Chrome(options=options, version_main=114) as driver:
+        chrome_options = uc.ChromeOptions()
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument("--window-size=3200x20800")
+        chrome_options.add_argument('--no-sandbox')
+        with uc.Chrome(enable_cdp_events=True, options=chrome_options, version_main=114) as driver:
             driver.get(url)
             soup = BeautifulSoup(driver.page_source, "html.parser")
     elif driver_type == 're':
@@ -94,30 +73,30 @@ def get_amazon_soup(url: str, driver_type: str = 're') -> BeautifulSoup:
 
 
 def check_amazon_url_status(soup: Optional[BeautifulSoup]) -> int:
-    title = None
-    page_status = 400
-    messages = {
-        "None": ("Failed", 0),
+    page_status = 0
+
+    messages: Dict[str, Tuple[str, int]] = {
         "Robot or human?": ("Automated Traffic Detected", 999),
         "Amazon.com": ("Page Error, Change driver", 404),
         "Amazon.com. Spend less. Smile more.": ("Page Error", 400),
     }
-
-    if soup:
-        title_element = soup.select_one("#title") or soup.find('title')
-        if title_element:
-            title = title_element.text.strip()
-
-    if title:
-        if title in messages:
-            print(messages[title][0])
-            page_status = messages[title][1]
-        else:
-            print(f"Title: {title}")
-            page_status = 200
-    else:
-        page_status = 0
+    if not soup:
         print("No Soup")
+        return page_status
+    try:
+        title_element = soup.select_one("#title") or soup.find('title')
+        title = title_element.text.strip() if title_element else None
+    except Exception as e:
+        print(f"Error parsing soup: {e}")
+        return page_status
+    if title and title in messages:
+        print(messages[title][0])
+        page_status = messages[title][1]
+    elif title:
+        print(f"Title: {title}")
+        page_status = 200
+    else:
+        print("Unknown error")
 
     return page_status
 
@@ -146,9 +125,6 @@ def extract_product_details(soup: BeautifulSoup, url):
         for ul in about_item.find_all_next('ul', class_='a-unordered-list'):
             about_item_items.append(ul.text.strip())
 
-    print("\nAbout This Item:")
-    for item in about_item_items:
-        print(item)
     return specifications_b, about_item_items
 
 
@@ -249,6 +225,7 @@ def generate_error_data(a_url, status):
 
 
 if __name__ == "__main__":
+    print("Amazon Scraping Started\n")
     scrape_list = amazon_url_list_inc
     print(f"Scraping {len(scrape_list)} URLs\n ")
     for amazon_url in scrape_list:

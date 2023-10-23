@@ -1,24 +1,23 @@
-from walmart_main import get_walmart_soup, check_walmart_url_status, extract_breadcrumbs, extract_product_data
+from .walmart_main import get_walmart_soup, check_walmart_url_status, extract_breadcrumbs, extract_product_data, \
+    generate_error_data
 from test_data import amazon_url_list_404, walmart_url_list_404, walmart_url_list_inc, amazon_url_list_inc, \
     walmart_url_list_exa, amazon_url_list_exa
 
-output_file_no_duplicates = "../output_files/output_file_no_duplicates.csv"
 
-walmart_urls = ['https://www.walmart.com/ip/999541784?selected=true',
-                "https://www.walmart.com/ip/996900990?selected=true",
-                "https://www.walmart.com/ip/925123195?selected=true",
-                "https://www.walmart.com/ip/314409680?selected=true",
-                "https://www.walmart.com/ip/158741871?selected=true",
-                "https://www.walmart.com/ip/109999521?selected=true",
-                "https://www.walmart.com/ip/755983708?selected=true"]
+def process_walmart_url(walmart_url):
+    w_soup_data = get_walmart_soup(walmart_url, driver_type='sb')
+    w_page_status_, w_json_blob = check_walmart_url_status(w_soup_data)
+    if w_page_status_ == 200:
+        w_breadcrumbs_text = extract_breadcrumbs(w_soup_data, w_json_blob)
+        w_product_data = extract_product_data(w_soup_data, w_json_blob, walmart_url)
+        print(w_product_data)
+    else:
+        w_product_data = generate_error_data(walmart_url, w_page_status_)
+        print(w_product_data)
+    return w_product_data
+
 
 if __name__ == "__main__":
-    walmart_url = walmart_url_list_exa[0]
-    print("Scraping Started\n")
-    # for walmart_url in walmart_url_list_exa:
-    soup_data = get_walmart_soup(walmart_url, driver_type='uc')
-    page_status_, json_blob = check_walmart_url_status(soup_data)
-    if page_status_ == 200:
-        breadcrumbs_text = extract_breadcrumbs(soup_data, json_blob)
-        product_data = extract_product_data(soup_data, json_blob, walmart_url)
-        print(product_data)
+    walmart_url_ = "https://www.walmart.com/ip/997560727?selected=true"
+    print("Test Scraping Started\n")
+    process_walmart_url(walmart_url_)
