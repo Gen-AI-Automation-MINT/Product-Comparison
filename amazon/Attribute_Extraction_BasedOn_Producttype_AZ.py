@@ -16,78 +16,96 @@ import pyodbc
 from datetime import datetime
 import psycopg2
 import ssl
+
 ssl._create_default_https_context = ssl._create_unverified_context
-import random,socket
-#SQL conncetion
+import random, socket
+
+# SQL conncetion
 username = 'postgres'
 password = 'Linux@18276'
 
 System_Name = socket.gethostname()
 User_Name = os.getlogin()
-#SQL conncetion
-def azcon():
-    connection = psycopg2.connect(host = '103.19.88.66', dbname = 'Walmart MINT - AZ', user=username, password=password, port='5432')
-    cursor = connection.cursor()
-    return connection,cursor
 
-rs1 = "'"+"Processed"+"'"
-rs2 = "'"+""+"'"
-rs3 = "'"+"Initiated"+"'"
-sysname = System_Name.replace("-","_")
+
+# SQL conncetion
+def azcon():
+    connection = psycopg2.connect(host='103.19.88.66', dbname='Walmart MINT - AZ', user=username, password=password,
+                                  port='5432')
+    cursor = connection.cursor()
+    return connection, cursor
+
+
+rs1 = "'" + "Processed" + "'"
+rs2 = "'" + "" + "'"
+rs3 = "'" + "Initiated" + "'"
+sysname = System_Name.replace("-", "_")
 
 Batch = input('Enter the Batch ID:')
 
+
 def urlquery():
-    connection,cursor = azcon()
-    cursor.execute('SELECT * FROM "ECHO_AE_AZ_In" WHERE "Batch_ID" = {} and "System_Name" = {} and "User_Name" = {} and ("Record_Status" is NULL or "Record_Status" = {})'.format(Batch,"'"+sysname+"'","'"+User_Name+"'",rs2))
-    return connection,cursor
+    connection, cursor = azcon()
+    cursor.execute(
+        'SELECT * FROM "ECHO_AE_AZ_In" WHERE "Batch_ID" = {} and "System_Name" = {} and "User_Name" = {} and ("Record_Status" is NULL or "Record_Status" = {})'.format(
+            Batch, "'" + sysname + "'", "'" + User_Name + "'", rs2))
+    return connection, cursor
+
+
 def query():
-    connection,cursor = azcon()
-    cursor.execute('WITH AZ_input AS(SELECT ROW_NUMBER() OVER (ORDER BY "Batch_ID") ID,"AZ_Record_ID","Batch_ID","AZ_URL","Input_Date","Record_Status" FROM "ECHO_AE_AZ_In" WHERE "Batch_ID" = {} and ("Record_Status" != {} or "Record_Status" = {}  or "Record_Status" is NULL or "Record_Status" = {}))SELECT * FROM AZ_input WHERE ID Between {} and {} and ("Record_Status" = {} or "Record_Status" is NULL or "Record_Status" = {})'.format(Batch, rs1, rs3, rs2 ,Processcount, Processcount1,rs3,rs2))
-    return connection,cursor
+    connection, cursor = azcon()
+    cursor.execute(
+        'WITH AZ_input AS(SELECT ROW_NUMBER() OVER (ORDER BY "Batch_ID") ID,"AZ_Record_ID","Batch_ID","AZ_URL","Input_Date","Record_Status" FROM "ECHO_AE_AZ_In" WHERE "Batch_ID" = {} and ("Record_Status" != {} or "Record_Status" = {}  or "Record_Status" is NULL or "Record_Status" = {}))SELECT * FROM AZ_input WHERE ID Between {} and {} and ("Record_Status" = {} or "Record_Status" is NULL or "Record_Status" = {})'.format(
+            Batch, rs1, rs3, rs2, Processcount, Processcount1, rs3, rs2))
+    return connection, cursor
+
 
 def reccount():
-    connection,cursor = urlquery()
+    connection, cursor = urlquery()
     relen = len(cursor.fetchall())
     return relen
+
 
 relen = reccount()
 if relen == 0:
     Processcount = int(input("Enter the number of record"))
     Processcount1 = int(input("Enter the number of record"))
-    connection,cursor = query()
+    connection, cursor = query()
     for urllines in cursor.fetchall():
-        connection,cursor = azcon()
-        cursor.execute('UPDATE "ECHO_AE_AZ_In" SET "System_Name" = (%s),"User_Name" = (%s) WHERE "Batch_ID" = (%s) and "AZ_URL" = (%s) and "System_Name" is NULL  and "User_Name" is NULL;',(sysname,User_Name,Batch,urllines[3]))
+        connection, cursor = azcon()
+        cursor.execute(
+            'UPDATE "ECHO_AE_AZ_In" SET "System_Name" = (%s),"User_Name" = (%s) WHERE "Batch_ID" = (%s) and "AZ_URL" = (%s) and "System_Name" is NULL  and "User_Name" is NULL;',
+            (sysname, User_Name, Batch, urllines[3]))
         connection.commit()
 val = "'NULL'"
-#All References for Colors and Sizes
+# All References for Colors and Sizes
 cursor.execute('SELECT "Colors" FROM "All_References" Where "Colors" != {}'.format(val))
 colorscolumn = cursor.fetchall()
 colorslist = []
 for i in range(len(colorscolumn)):
-  colorslist.append(colorscolumn[i][0].lower().strip())
+    colorslist.append(colorscolumn[i][0].lower().strip())
 
 cursor.execute('SELECT "Sizes" FROM "All_References" Where "Sizes" != {}'.format(val))
 sizescolumn = cursor.fetchall()
 sizeslist = []
 for i in range(len(sizescolumn)):
-  sizeslist.append(sizescolumn[i][0].lower().strip())
+    sizeslist.append(sizescolumn[i][0].lower().strip())
 
-#Platform list
+# Platform list
 cursor.execute('SELECT "VG_Platform" FROM "VG_Platforms" Where "VG_Platform" !={}'.format(val))
 platform = cursor.fetchall()
 platformlist = []
 for i in range(len(platform)):
-  platformlist.append(platform[i][0].lower())
+    platformlist.append(platform[i][0].lower())
 
-#install Browsec VPN
+
+# install Browsec VPN
 def browsecvpn():
-
-    driver.get("https://chrome.google.com/webstore/detail/browsec-vpn-free-vpn-for/omghfjlpggmjjaagoclmmobgdodcjboh?hl=en")
+    driver.get(
+        "https://chrome.google.com/webstore/detail/browsec-vpn-free-vpn-for/omghfjlpggmjjaagoclmmobgdodcjboh?hl=en")
     time.sleep(5)
     actions = ActionChains(driver)
-    actions.send_keys(Keys.TAB*11)
+    actions.send_keys(Keys.TAB * 11)
     actions.send_keys(Keys.ENTER)
     actions.perform()
     time.sleep(2)
@@ -100,29 +118,30 @@ def browsecvpn():
     pyautogui.press('esc')
     driver.get('chrome-extension://omghfjlpggmjjaagoclmmobgdodcjboh/popup/popup.html')
 
-    vpnstatus='No'
+    vpnstatus = 'No'
 
     while True:
         os.system('cls')
         vpnstatus = input('Type Yes if VPN is enabled:')
-        if vpnstatus=='Yes':
-           break
+        if vpnstatus == 'Yes':
+            break
+
 
 def disVPN():
-    
-    driver.get("https://chrome.google.com/webstore/detail/browsec-vpn-free-vpn-for/omghfjlpggmjjaagoclmmobgdodcjboh?hl=en")
+    driver.get(
+        "https://chrome.google.com/webstore/detail/browsec-vpn-free-vpn-for/omghfjlpggmjjaagoclmmobgdodcjboh?hl=en")
     time.sleep(5)
     actions = ActionChains(driver)
-    actions.send_keys(Keys.TAB*11)
+    actions.send_keys(Keys.TAB * 11)
     actions.send_keys(Keys.ENTER)
     actions.perform()
     time.sleep(2)
 
     pyautogui.press('enter')
 
-#Change AMZ location
-def amzlocchange():
 
+# Change AMZ location
+def amzlocchange():
     driver.get('https://www.amazon.com/')
     driver.implicitly_wait
     try:
@@ -143,10 +162,11 @@ def amzlocchange():
         actions.perform()
         time.sleep(2)
         actions = ActionChains(driver)
-        actions.send_keys(Keys.TAB*4)
+        actions.send_keys(Keys.TAB * 4)
         actions.send_keys(Keys.ENTER)
         actions.perform()
         time.sleep(10)
+
 
 # Input Paths
 with open("Inputpath.txt") as z:
@@ -157,631 +177,644 @@ with open("Inputpath.txt") as z:
 chrome_options = Options()
 chrome_options.add_argument('--headerless')
 chrome_options.add_argument("--window-size=3200x20800")
-driver = uc.Chrome(enable_cdp_events=True, Options = chrome_options)
+driver = uc.Chrome(enable_cdp_events=True, Options=chrome_options)
 
-#browsecvpn()
+# browsecvpn()
 amzlocchange()
-#disVPN()
+
+
+# disVPN()
 
 def book(soup):
-        titleISBN13 = ''
-        titleISBN10 = ''
-        prodetailISBN13 = ''
-        prodetailISBN10 = ''
-        titleformat = ''
-        try:
-            # ISBN
-            wtitles = soup.find("span", attrs={"id": 'productTitle'}).text
-            wtitles = wtitles.split(" ")
-            for i in wtitles:
-                if len(i) == 13 and i.isnumeric():
-                    titleISBN13 = i
+    titleISBN13 = ''
+    titleISBN10 = ''
+    prodetailISBN13 = ''
+    prodetailISBN10 = ''
+    titleformat = ''
+    try:
+        # ISBN
+        wtitles = soup.find("span", attrs={"id": 'productTitle'}).text
+        wtitles = wtitles.split(" ")
+        for i in wtitles:
+            if len(i) == 13 and i.isnumeric():
+                titleISBN13 = i
 
-        except:
-            pass
+    except:
+        pass
 
-        try:
-            # ISBN
-            wtitles = soup.find("span", attrs={"id": 'productTitle'}).text
-            wtitles = wtitles.split(" ")
-            for i in wtitles:
-                if len(i) == 10 and i.isnumeric():
-                    titleISBN10 = i
+    try:
+        # ISBN
+        wtitles = soup.find("span", attrs={"id": 'productTitle'}).text
+        wtitles = wtitles.split(" ")
+        for i in wtitles:
+            if len(i) == 10 and i.isnumeric():
+                titleISBN10 = i
 
-        except:
-            pass
+    except:
+        pass
 
-        try:
-            prodet = soup.find_all('div', class_='a-expander-content a-expander-partial-collapse-content')
-            for i in prodet:
-                prodet_text = i.text.split(" ")
-                for j in prodet_text:
-                    j = j.replace(".", "")
-                    if len(j) == 13 and j.isnumeric():
-                        prodetailISBN13 = j
-        except:
-            pass
+    try:
+        prodet = soup.find_all('div', class_='a-expander-content a-expander-partial-collapse-content')
+        for i in prodet:
+            prodet_text = i.text.split(" ")
+            for j in prodet_text:
+                j = j.replace(".", "")
+                if len(j) == 13 and j.isnumeric():
+                    prodetailISBN13 = j
+    except:
+        pass
 
-        try:
-            prodet = soup.find_all('div', class_='a-expander-content a-expander-partial-collapse-content')
-            for i in prodet:
-                prodet_text = i.text.split(" ")
-                for j in prodet_text:
-                    j = j.replace(".", "")
-                    if len(j) == 10 and j.isnumeric():
-                        prodetailISBN10 = j
-        except:
-            pass
+    try:
+        prodet = soup.find_all('div', class_='a-expander-content a-expander-partial-collapse-content')
+        for i in prodet:
+            prodet_text = i.text.split(" ")
+            for j in prodet_text:
+                j = j.replace(".", "")
+                if len(j) == 10 and j.isnumeric():
+                    prodetailISBN10 = j
+    except:
+        pass
 
-        try:
-            # title format
-            searched_word_format = 'Mass Market Paperback'
-            titlepapercls = soup.find("span", attrs={"id": 'productSubtitle'})
-            titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format)),
+    try:
+        # title format
+        searched_word_format = 'Mass Market Paperback'
+        titlepapercls = soup.find("span", attrs={"id": 'productSubtitle'})
+        titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format)),
+                                            recursive=True)
+        if len(titlepaper) != 0:
+            titleformat = "Mass Market Paperback"
+        else:
+            searched_word_format1 = 'Hardcover'
+            titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format1)),
                                                 recursive=True)
             if len(titlepaper) != 0:
-                titleformat = "Mass Market Paperback"
+                titleformat = "Hardcover"
             else:
-                searched_word_format1 = 'Hardcover'
-                titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format1)),
+                searched_word_format2 = 'Dvd'
+                titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format2)),
                                                     recursive=True)
                 if len(titlepaper) != 0:
-                    titleformat = "Hardcover"
+                    titleformat = "Dvd"
                 else:
-                    searched_word_format2 = 'Dvd'
-                    titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format2)),
+                    searched_word_format3 = 'Audiobook'
+                    searched_word_format31 = 'Audio CD'
+                    titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format3)),
                                                         recursive=True)
-                    if len(titlepaper) != 0:
-                        titleformat = "Dvd"
-                    else:
-                        searched_word_format3 = 'Audiobook'
-                        searched_word_format31 = 'Audio CD'
-                        titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format3)),
-                                                            recursive=True)
-                        titlepaper1 = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format31)),
-                                                            recursive=True)
-                        if (len(titlepaper) != 0) and (len(titlepaper1) != 0):
-                            if iformat != '' and highformat != '' and iformat == "Audiobook" and highformat == "Audiobook":
-                                titleformat = "Audiobook"
-                            elif iformat != '' and highformat != '' and iformat == "Audio CD" and highformat == "Audio CD":
-                                titleformat = "Audio CD"
-                            elif iformat == '' and highformat != '' and iformat == "Audio CD":
-                                titleformat = "Audio CD"
-                            elif iformat != '' and highformat != '' and highformat == "Audiobook":
-                                titleformat ="Audiobook"
-                        elif len(titlepaper) != 0:
+                    titlepaper1 = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format31)),
+                                                         recursive=True)
+                    if (len(titlepaper) != 0) and (len(titlepaper1) != 0):
+                        if iformat != '' and highformat != '' and iformat == "Audiobook" and highformat == "Audiobook":
                             titleformat = "Audiobook"
-                        elif len(titlepaper1) != 0:
+                        elif iformat != '' and highformat != '' and iformat == "Audio CD" and highformat == "Audio CD":
                             titleformat = "Audio CD"
+                        elif iformat == '' and highformat != '' and iformat == "Audio CD":
+                            titleformat = "Audio CD"
+                        elif iformat != '' and highformat != '' and highformat == "Audiobook":
+                            titleformat = "Audiobook"
+                    elif len(titlepaper) != 0:
+                        titleformat = "Audiobook"
+                    elif len(titlepaper1) != 0:
+                        titleformat = "Audio CD"
+                    else:
+                        searched_word_format4 = 'Board book'
+                        titlepaper = titlepapercls.find_all(
+                            string=re.compile('.*{0}.*'.format(searched_word_format4)), recursive=True)
+                        if len(titlepaper) != 0:
+                            titleformat = "Board Book"
                         else:
-                            searched_word_format4 = 'Board book'
+                            searched_word_format5 = 'Picture Book'
                             titlepaper = titlepapercls.find_all(
-                                string=re.compile('.*{0}.*'.format(searched_word_format4)), recursive=True)
+                                string=re.compile('.*{0}.*'.format(searched_word_format5)), recursive=True)
                             if len(titlepaper) != 0:
-                                titleformat = "Board Book"
+                                titleformat = "Picture Book"
                             else:
-                                searched_word_format5 = 'Picture Book'
+                                searched_word_format6 = 'Trade Paperback'
                                 titlepaper = titlepapercls.find_all(
-                                    string=re.compile('.*{0}.*'.format(searched_word_format5)), recursive=True)
+                                    string=re.compile('.*{0}.*'.format(searched_word_format6)), recursive=True)
                                 if len(titlepaper) != 0:
-                                    titleformat = "Picture Book"
+                                    titleformat = "Trade Paperback"
                                 else:
-                                    searched_word_format6 = 'Trade Paperback'
+                                    searched_word_format7 = 'Paperback'
                                     titlepaper = titlepapercls.find_all(
-                                        string=re.compile('.*{0}.*'.format(searched_word_format6)), recursive=True)
+                                        string=re.compile('.*{0}.*'.format(searched_word_format7)), recursive=True)
                                     if len(titlepaper) != 0:
-                                        titleformat = "Trade Paperback"
+                                        titleformat = "Paperback"
                                     else:
-                                        searched_word_format7 = 'Paperback'
+                                        searched_word_format8 = 'Kindle'
                                         titlepaper = titlepapercls.find_all(
-                                            string=re.compile('.*{0}.*'.format(searched_word_format7)), recursive=True)
+                                            string=re.compile('.*{0}.*'.format(searched_word_format8)),
+                                            recursive=True)
                                         if len(titlepaper) != 0:
-                                            titleformat = "Paperback"
+                                            titleformat = "Kindle"
+
                                         else:
-                                            searched_word_format8 = 'Kindle'
+                                            searched_word_format9 = 'Ebook'
                                             titlepaper = titlepapercls.find_all(
-                                                string=re.compile('.*{0}.*'.format(searched_word_format8)),
+                                                string=re.compile('.*{0}.*'.format(searched_word_format9)),
                                                 recursive=True)
                                             if len(titlepaper) != 0:
-                                                titleformat = "Kindle"
+                                                titleformat = "Ebook"
 
                                             else:
-                                                searched_word_format9 = 'Ebook'
+                                                searched_word_format10 = 'Audio CD'
                                                 titlepaper = titlepapercls.find_all(
-                                                    string=re.compile('.*{0}.*'.format(searched_word_format9)),
+                                                    string=re.compile('.*{0}.*'.format(searched_word_format10)),
                                                     recursive=True)
                                                 if len(titlepaper) != 0:
-                                                    titleformat = "Ebook"
+                                                    titleformat = "Audio CD"
 
                                                 else:
-                                                    searched_word_format10 = 'Audio CD'
+                                                    searched_word_format11 = 'Soft Cover (Paperback)'
                                                     titlepaper = titlepapercls.find_all(
-                                                        string=re.compile('.*{0}.*'.format(searched_word_format10)),
+                                                        string=re.compile('.*{0}.*'.format(searched_word_format11)),
                                                         recursive=True)
                                                     if len(titlepaper) != 0:
-                                                        titleformat = "Audio CD"
-
+                                                        titleformat = "Soft Cover (Paperback)"
                                                     else:
-                                                        searched_word_format11 = 'Soft Cover (Paperback)'
-                                                        titlepaper = titlepapercls.find_all(
-                                                            string=re.compile('.*{0}.*'.format(searched_word_format11)),
+                                                        searched_word_format12 = 'DVD'
+                                                        titlepaper = titlepapercls.find_all(string=re.compile(
+                                                            '.*{0}.*'.format(searched_word_format12)),
                                                             recursive=True)
                                                         if len(titlepaper) != 0:
-                                                            titleformat = "Soft Cover (Paperback)"
+                                                            titleformat = "DVD"
                                                         else:
-                                                            searched_word_format12 = 'DVD'
+                                                            searched_word_format13 = 'Book'
                                                             titlepaper = titlepapercls.find_all(string=re.compile(
-                                                                '.*{0}.*'.format(searched_word_format12)),
+                                                                '.*{0}.*'.format(searched_word_format13)),
                                                                 recursive=True)
                                                             if len(titlepaper) != 0:
-                                                                titleformat = "DVD"
+                                                                titleformat = "Book"
                                                             else:
-                                                                searched_word_format13 = 'Book'
-                                                                titlepaper = titlepapercls.find_all(string=re.compile(
-                                                                    '.*{0}.*'.format(searched_word_format13)),
+                                                                searched_word_format14 = 'Flexibound'
+                                                                titlepaper = titlepapercls.find_all(
+                                                                    string=re.compile(
+                                                                        '.*{0}.*'.format(searched_word_format14)),
                                                                     recursive=True)
                                                                 if len(titlepaper) != 0:
-                                                                    titleformat = "Book"
+                                                                    titleformat = "Flexibound"
                                                                 else:
-                                                                    searched_word_format14 = 'Flexibound'
+                                                                    searched_word_format15 = 'Calendar'
                                                                     titlepaper = titlepapercls.find_all(
                                                                         string=re.compile(
-                                                                            '.*{0}.*'.format(searched_word_format14)),
+                                                                            '.*{0}.*'.format(
+                                                                                searched_word_format15)),
                                                                         recursive=True)
                                                                     if len(titlepaper) != 0:
-                                                                        titleformat = "Flexibound"
+                                                                        titleformat = "Calendar"
                                                                     else:
-                                                                        searched_word_format15 = 'Calendar'
+                                                                        searched_word_format16 = 'Cards'
                                                                         titlepaper = titlepapercls.find_all(
                                                                             string=re.compile(
                                                                                 '.*{0}.*'.format(
-                                                                                    searched_word_format15)),
+                                                                                    searched_word_format16)),
                                                                             recursive=True)
                                                                         if len(titlepaper) != 0:
-                                                                            titleformat = "Calendar"
+                                                                            titleformat = "Cards"
                                                                         else:
-                                                                            searched_word_format16 = 'Cards'
+                                                                            searched_word_format17 = 'Library Binding'
                                                                             titlepaper = titlepapercls.find_all(
                                                                                 string=re.compile(
                                                                                     '.*{0}.*'.format(
-                                                                                        searched_word_format16)),
+                                                                                        searched_word_format17)),
                                                                                 recursive=True)
                                                                             if len(titlepaper) != 0:
-                                                                                titleformat = "Cards"
+                                                                                titleformat = "Library Binding"
                                                                             else:
-                                                                                searched_word_format17 = 'Library Binding'
+                                                                                searched_word_format18 = 'Map'
                                                                                 titlepaper = titlepapercls.find_all(
                                                                                     string=re.compile(
                                                                                         '.*{0}.*'.format(
-                                                                                            searched_word_format17)),
+                                                                                            searched_word_format18)),
                                                                                     recursive=True)
                                                                                 if len(titlepaper) != 0:
-                                                                                    titleformat = "Library Binding"
+                                                                                    titleformat = "Map"
                                                                                 else:
-                                                                                    searched_word_format18 = 'Map'
+                                                                                    searched_word_format19 = 'Spiral-bound'
                                                                                     titlepaper = titlepapercls.find_all(
                                                                                         string=re.compile(
                                                                                             '.*{0}.*'.format(
-                                                                                                searched_word_format18)),
+                                                                                                searched_word_format19)),
                                                                                         recursive=True)
                                                                                     if len(titlepaper) != 0:
-                                                                                        titleformat = "Map"
+                                                                                        titleformat = "Spiral-bound"
                                                                                     else:
-                                                                                        searched_word_format19 = 'Spiral-bound'
+                                                                                        searched_word_format20 = 'Plastic Comb'
                                                                                         titlepaper = titlepapercls.find_all(
                                                                                             string=re.compile(
                                                                                                 '.*{0}.*'.format(
-                                                                                                    searched_word_format19)),
+                                                                                                    searched_word_format20)),
                                                                                             recursive=True)
                                                                                         if len(titlepaper) != 0:
-                                                                                            titleformat = "Spiral-bound"
-                                                                                        else:
-                                                                                            searched_word_format20 = 'Plastic Comb'
-                                                                                            titlepaper = titlepapercls.find_all(
-                                                                                                string=re.compile(
-                                                                                                    '.*{0}.*'.format(
-                                                                                                        searched_word_format20)),
-                                                                                                recursive=True)
-                                                                                            if len(titlepaper) != 0:
-                                                                                                titleformat = "Plastic Comb"
+                                                                                            titleformat = "Plastic Comb"
 
-        except:
-            pass
+    except:
+        pass
 
-        return titleISBN13, titleISBN10, prodetailISBN13, prodetailISBN10, titleformat
+    return titleISBN13, titleISBN10, prodetailISBN13, prodetailISBN10, titleformat
+
 
 def extraction(soup):
-        titleISBN13 = ''
-        titleISBN10 = ''
-        prodetailISBN13 = ''
-        prodetailISBN10 = ''
-        titleformat = ''
-        try:
-            # ISBN
-            wtitles = soup.find("span", attrs={"id": 'productTitle'}).text
-            wtitles = wtitles.split(" ")
-            for i in wtitles:
-                if len(i) == 13 and i.isnumeric():
-                    titleISBN13 = i
+    titleISBN13 = ''
+    titleISBN10 = ''
+    prodetailISBN13 = ''
+    prodetailISBN10 = ''
+    titleformat = ''
+    try:
+        # ISBN
+        wtitles = soup.find("span", attrs={"id": 'productTitle'}).text
+        wtitles = wtitles.split(" ")
+        for i in wtitles:
+            if len(i) == 13 and i.isnumeric():
+                titleISBN13 = i
 
-        except:
-            pass
+    except:
+        pass
 
-        try:
-            # ISBN
-            wtitles = soup.find("span", attrs={"id": 'productTitle'}).text
-            wtitles = wtitles.split(" ")
-            for i in wtitles:
-                if len(i) == 10 and i.isnumeric():
-                    titleISBN10 = i
+    try:
+        # ISBN
+        wtitles = soup.find("span", attrs={"id": 'productTitle'}).text
+        wtitles = wtitles.split(" ")
+        for i in wtitles:
+            if len(i) == 10 and i.isnumeric():
+                titleISBN10 = i
 
-        except:
-            pass
+    except:
+        pass
 
-        try:
-            prodet = soup.find_all('div', class_='a-expander-content a-expander-partial-collapse-content')
-            for i in prodet:
-                prodet_text = i.text.split(" ")
-                for j in prodet_text:
-                    j = j.replace(".", "")
-                    if len(j) == 13 and j.isnumeric():
-                        prodetailISBN13 = j
-        except:
-            pass
+    try:
+        prodet = soup.find_all('div', class_='a-expander-content a-expander-partial-collapse-content')
+        for i in prodet:
+            prodet_text = i.text.split(" ")
+            for j in prodet_text:
+                j = j.replace(".", "")
+                if len(j) == 13 and j.isnumeric():
+                    prodetailISBN13 = j
+    except:
+        pass
 
-        try:
-            prodet = soup.find_all('div', class_='a-expander-content a-expander-partial-collapse-content')
-            for i in prodet:
-                prodet_text = i.text.split(" ")
-                for j in prodet_text:
-                    j = j.replace(".", "")
-                    if len(j) == 10 and j.isnumeric():
-                        prodetailISBN10 = j
-        except:
-            pass
+    try:
+        prodet = soup.find_all('div', class_='a-expander-content a-expander-partial-collapse-content')
+        for i in prodet:
+            prodet_text = i.text.split(" ")
+            for j in prodet_text:
+                j = j.replace(".", "")
+                if len(j) == 10 and j.isnumeric():
+                    prodetailISBN10 = j
+    except:
+        pass
 
-        try:
-            # title format
-            searched_word_format = 'Mass Market Paperback'
-            titlepapercls = soup.find("span", attrs={"id": 'productSubtitle'})
-            titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format)),
+    try:
+        # title format
+        searched_word_format = 'Mass Market Paperback'
+        titlepapercls = soup.find("span", attrs={"id": 'productSubtitle'})
+        titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format)),
+                                            recursive=True)
+        if len(titlepaper) != 0:
+            titleformat = "Mass Market Paperback"
+        else:
+            searched_word_format1 = 'Hardcover'
+            titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format1)),
                                                 recursive=True)
             if len(titlepaper) != 0:
-                titleformat = "Mass Market Paperback"
+                titleformat = "Hardcover"
             else:
-                searched_word_format1 = 'Hardcover'
-                titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format1)),
+                searched_word_format2 = 'Dvd'
+                titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format2)),
                                                     recursive=True)
                 if len(titlepaper) != 0:
-                    titleformat = "Hardcover"
+                    titleformat = "Dvd"
                 else:
-                    searched_word_format2 = 'Dvd'
-                    titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format2)),
+                    searched_word_format3 = 'Audiobook'
+                    searched_word_format31 = 'Audio CD'
+                    titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format3)),
                                                         recursive=True)
-                    if len(titlepaper) != 0:
-                        titleformat = "Dvd"
-                    else:
-                        searched_word_format3 = 'Audiobook'
-                        searched_word_format31 = 'Audio CD'
-                        titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format3)),
-                                                            recursive=True)
-                        titlepaper1 = titlepapercls.find_all(
-                            string=re.compile('.*{0}.*'.format(searched_word_format31)),
-                            recursive=True)
-                        if (len(titlepaper) != 0) and (len(titlepaper1) != 0):
-                            if iformat != '' and highformat != '' and iformat == "Audiobook" and highformat == "Audiobook":
-                                titleformat = "Audiobook"
-                            elif iformat != '' and highformat != '' and iformat == "Audio CD" and highformat == "Audio CD":
-                                titleformat = "Audio CD"
-                            elif iformat == '' and highformat != '' and iformat == "Audio CD":
-                                titleformat = "Audio CD"
-                            elif iformat != '' and highformat != '' and highformat == "Audiobook":
-                                titleformat = "Audiobook"
-                        elif len(titlepaper) != 0:
+                    titlepaper1 = titlepapercls.find_all(
+                        string=re.compile('.*{0}.*'.format(searched_word_format31)),
+                        recursive=True)
+                    if (len(titlepaper) != 0) and (len(titlepaper1) != 0):
+                        if iformat != '' and highformat != '' and iformat == "Audiobook" and highformat == "Audiobook":
                             titleformat = "Audiobook"
-                        elif len(titlepaper1) != 0:
+                        elif iformat != '' and highformat != '' and iformat == "Audio CD" and highformat == "Audio CD":
                             titleformat = "Audio CD"
+                        elif iformat == '' and highformat != '' and iformat == "Audio CD":
+                            titleformat = "Audio CD"
+                        elif iformat != '' and highformat != '' and highformat == "Audiobook":
+                            titleformat = "Audiobook"
+                    elif len(titlepaper) != 0:
+                        titleformat = "Audiobook"
+                    elif len(titlepaper1) != 0:
+                        titleformat = "Audio CD"
+                    else:
+                        searched_word_format4 = 'Board book'
+                        titlepaper = titlepapercls.find_all(
+                            string=re.compile('.*{0}.*'.format(searched_word_format4)), recursive=True)
+                        if len(titlepaper) != 0:
+                            titleformat = "Board Book"
                         else:
-                            searched_word_format4 = 'Board book'
+                            searched_word_format5 = 'Picture Book'
                             titlepaper = titlepapercls.find_all(
-                                string=re.compile('.*{0}.*'.format(searched_word_format4)), recursive=True)
+                                string=re.compile('.*{0}.*'.format(searched_word_format5)), recursive=True)
                             if len(titlepaper) != 0:
-                                titleformat = "Board Book"
+                                titleformat = "Picture Book"
                             else:
-                                searched_word_format5 = 'Picture Book'
+                                searched_word_format6 = 'Trade Paperback'
                                 titlepaper = titlepapercls.find_all(
-                                    string=re.compile('.*{0}.*'.format(searched_word_format5)), recursive=True)
+                                    string=re.compile('.*{0}.*'.format(searched_word_format6)), recursive=True)
                                 if len(titlepaper) != 0:
-                                    titleformat = "Picture Book"
+                                    titleformat = "Trade Paperback"
                                 else:
-                                    searched_word_format6 = 'Trade Paperback'
+                                    searched_word_format7 = 'Paperback'
                                     titlepaper = titlepapercls.find_all(
-                                        string=re.compile('.*{0}.*'.format(searched_word_format6)), recursive=True)
+                                        string=re.compile('.*{0}.*'.format(searched_word_format7)), recursive=True)
                                     if len(titlepaper) != 0:
-                                        titleformat = "Trade Paperback"
+                                        titleformat = "Paperback"
                                     else:
-                                        searched_word_format7 = 'Paperback'
+                                        searched_word_format8 = 'Kindle'
                                         titlepaper = titlepapercls.find_all(
-                                            string=re.compile('.*{0}.*'.format(searched_word_format7)), recursive=True)
+                                            string=re.compile('.*{0}.*'.format(searched_word_format8)),
+                                            recursive=True)
                                         if len(titlepaper) != 0:
-                                            titleformat = "Paperback"
+                                            titleformat = "Kindle"
+
                                         else:
-                                            searched_word_format8 = 'Kindle'
+                                            searched_word_format9 = 'Ebook'
                                             titlepaper = titlepapercls.find_all(
-                                                string=re.compile('.*{0}.*'.format(searched_word_format8)),
+                                                string=re.compile('.*{0}.*'.format(searched_word_format9)),
                                                 recursive=True)
                                             if len(titlepaper) != 0:
-                                                titleformat = "Kindle"
+                                                titleformat = "Ebook"
 
                                             else:
-                                                searched_word_format9 = 'Ebook'
+                                                searched_word_format10 = 'Audio CD'
                                                 titlepaper = titlepapercls.find_all(
-                                                    string=re.compile('.*{0}.*'.format(searched_word_format9)),
+                                                    string=re.compile('.*{0}.*'.format(searched_word_format10)),
                                                     recursive=True)
                                                 if len(titlepaper) != 0:
-                                                    titleformat = "Ebook"
+                                                    titleformat = "Audio CD"
 
                                                 else:
-                                                    searched_word_format10 = 'Audio CD'
+                                                    searched_word_format11 = 'Soft Cover (Paperback)'
                                                     titlepaper = titlepapercls.find_all(
-                                                        string=re.compile('.*{0}.*'.format(searched_word_format10)),
+                                                        string=re.compile('.*{0}.*'.format(searched_word_format11)),
                                                         recursive=True)
                                                     if len(titlepaper) != 0:
-                                                        titleformat = "Audio CD"
-
+                                                        titleformat = "Soft Cover (Paperback)"
                                                     else:
-                                                        searched_word_format11 = 'Soft Cover (Paperback)'
-                                                        titlepaper = titlepapercls.find_all(
-                                                            string=re.compile('.*{0}.*'.format(searched_word_format11)),
+                                                        searched_word_format12 = 'DVD'
+                                                        titlepaper = titlepapercls.find_all(string=re.compile(
+                                                            '.*{0}.*'.format(searched_word_format12)),
                                                             recursive=True)
                                                         if len(titlepaper) != 0:
-                                                            titleformat = "Soft Cover (Paperback)"
+                                                            titleformat = "DVD"
                                                         else:
-                                                            searched_word_format12 = 'DVD'
+                                                            searched_word_format13 = 'Book'
                                                             titlepaper = titlepapercls.find_all(string=re.compile(
-                                                                '.*{0}.*'.format(searched_word_format12)),
+                                                                '.*{0}.*'.format(searched_word_format13)),
                                                                 recursive=True)
                                                             if len(titlepaper) != 0:
-                                                                titleformat = "DVD"
+                                                                titleformat = "Book"
                                                             else:
-                                                                searched_word_format13 = 'Book'
-                                                                titlepaper = titlepapercls.find_all(string=re.compile(
-                                                                    '.*{0}.*'.format(searched_word_format13)),
+                                                                searched_word_format14 = 'Flexibound'
+                                                                titlepaper = titlepapercls.find_all(
+                                                                    string=re.compile(
+                                                                        '.*{0}.*'.format(searched_word_format14)),
                                                                     recursive=True)
                                                                 if len(titlepaper) != 0:
-                                                                    titleformat = "Book"
+                                                                    titleformat = "Flexibound"
                                                                 else:
-                                                                    searched_word_format14 = 'Flexibound'
+                                                                    searched_word_format15 = 'Calendar'
                                                                     titlepaper = titlepapercls.find_all(
                                                                         string=re.compile(
-                                                                            '.*{0}.*'.format(searched_word_format14)),
+                                                                            '.*{0}.*'.format(
+                                                                                searched_word_format15)),
                                                                         recursive=True)
                                                                     if len(titlepaper) != 0:
-                                                                        titleformat = "Flexibound"
+                                                                        titleformat = "Calendar"
                                                                     else:
-                                                                        searched_word_format15 = 'Calendar'
+                                                                        searched_word_format16 = 'Cards'
                                                                         titlepaper = titlepapercls.find_all(
                                                                             string=re.compile(
                                                                                 '.*{0}.*'.format(
-                                                                                    searched_word_format15)),
+                                                                                    searched_word_format16)),
                                                                             recursive=True)
                                                                         if len(titlepaper) != 0:
-                                                                            titleformat = "Calendar"
+                                                                            titleformat = "Cards"
                                                                         else:
-                                                                            searched_word_format16 = 'Cards'
+                                                                            searched_word_format17 = 'Library Binding'
                                                                             titlepaper = titlepapercls.find_all(
                                                                                 string=re.compile(
                                                                                     '.*{0}.*'.format(
-                                                                                        searched_word_format16)),
+                                                                                        searched_word_format17)),
                                                                                 recursive=True)
                                                                             if len(titlepaper) != 0:
-                                                                                titleformat = "Cards"
+                                                                                titleformat = "Library Binding"
                                                                             else:
-                                                                                searched_word_format17 = 'Library Binding'
+                                                                                searched_word_format18 = 'Map'
                                                                                 titlepaper = titlepapercls.find_all(
                                                                                     string=re.compile(
                                                                                         '.*{0}.*'.format(
-                                                                                            searched_word_format17)),
+                                                                                            searched_word_format18)),
                                                                                     recursive=True)
                                                                                 if len(titlepaper) != 0:
-                                                                                    titleformat = "Library Binding"
+                                                                                    titleformat = "Map"
                                                                                 else:
-                                                                                    searched_word_format18 = 'Map'
+                                                                                    searched_word_format19 = 'Spiral-bound'
                                                                                     titlepaper = titlepapercls.find_all(
                                                                                         string=re.compile(
                                                                                             '.*{0}.*'.format(
-                                                                                                searched_word_format18)),
+                                                                                                searched_word_format19)),
                                                                                         recursive=True)
                                                                                     if len(titlepaper) != 0:
-                                                                                        titleformat = "Map"
+                                                                                        titleformat = "Spiral-bound"
                                                                                     else:
-                                                                                        searched_word_format19 = 'Spiral-bound'
+                                                                                        searched_word_format20 = 'Plastic Comb'
                                                                                         titlepaper = titlepapercls.find_all(
                                                                                             string=re.compile(
                                                                                                 '.*{0}.*'.format(
-                                                                                                    searched_word_format19)),
+                                                                                                    searched_word_format20)),
                                                                                             recursive=True)
                                                                                         if len(titlepaper) != 0:
-                                                                                            titleformat = "Spiral-bound"
-                                                                                        else:
-                                                                                            searched_word_format20 = 'Plastic Comb'
-                                                                                            titlepaper = titlepapercls.find_all(
-                                                                                                string=re.compile(
-                                                                                                    '.*{0}.*'.format(
-                                                                                                        searched_word_format20)),
-                                                                                                recursive=True)
-                                                                                            if len(titlepaper) != 0:
-                                                                                                titleformat = "Plastic Comb"
+                                                                                            titleformat = "Plastic Comb"
 
-        except:
-            pass
+    except:
+        pass
 
-        return titleISBN13, titleISBN10, prodetailISBN13, prodetailISBN10, titleformat
+    return titleISBN13, titleISBN10, prodetailISBN13, prodetailISBN10, titleformat
 
 
 def movies(soup):
-        titleformat = ""
-        try:
-            # title format
-            titlepapercls = soup.find("title")
-            searched_word_format = 'Dvd'
-            titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format)),recursive=True)
+    titleformat = ""
+    try:
+        # title format
+        titlepapercls = soup.find("title")
+        searched_word_format = 'Dvd'
+        titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format)), recursive=True)
+        if len(titlepaper) != 0:
+            titleformat = "DVD"
+        else:
+            searched_word_format1 = 'DVD'
+            titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format1)),
+                                                recursive=True)
             if len(titlepaper) != 0:
-                    titleformat = "DVD"
+                titleformat = "DVD"
             else:
-                searched_word_format1 = 'DVD'
-                titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format1)),recursive=True)
+                searched_word_format9 = 'CD'
+                titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format9)),
+                                                    recursive=True)
                 if len(titlepaper) != 0:
-                    titleformat = "DVD"    
+                    titleformat = "CD"
                 else:
-                    searched_word_format9 = 'CD'
-                    titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format9)),recursive=True)
+                    searched_word_format2 = 'Blu-Ray'
+                    titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format2)),
+                                                        recursive=True)
                     if len(titlepaper) != 0:
-                        titleformat = "CD"
+                        titleformat = "Blu-Ray"
                     else:
-                        searched_word_format2 = 'Blu-Ray'
-                        titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format2)),recursive=True)
+                        searched_word_format3 = 'Blu-ray'
+                        titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format3)),
+                                                            recursive=True)
                         if len(titlepaper) != 0:
-                            titleformat = "Blu-Ray"
+                            titleformat = "Blu-ray"
                         else:
-                            searched_word_format3 = 'Blu-ray'
-                            titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format3)),recursive=True)
+                            searched_word_format5 = 'Multiple Formats'
+                            titlepaper = titlepapercls.find_all(
+                                string=re.compile('.*{0}.*'.format(searched_word_format5)), recursive=True)
                             if len(titlepaper) != 0:
-                                titleformat = "Blu-ray"
+                                titleformat = "Multi-Format"
                             else:
-                                searched_word_format5 = 'Multiple Formats'
-                                titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format5)),recursive=True)
+                                searched_word_format6 = 'VHS Tape'
+                                titlepaper = titlepapercls.find_all(
+                                    string=re.compile('.*{0}.*'.format(searched_word_format6)), recursive=True)
                                 if len(titlepaper) != 0:
-                                    titleformat = "Multi-Format"
+                                    titleformat = "VHS Tape"
                                 else:
-                                    searched_word_format6 = 'VHS Tape'
-                                    titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format6)),recursive=True)
+                                    searched_word_format7 = '4K Ultra HD'
+                                    titlepaper = titlepapercls.find_all(
+                                        string=re.compile('.*{0}.*'.format(searched_word_format7)), recursive=True)
                                     if len(titlepaper) != 0:
-                                        titleformat = "VHS Tape"
+                                        titleformat = "4K Ultra HD"
                                     else:
-                                        searched_word_format7 = '4K Ultra HD'
-                                        titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format7)),recursive=True)
+                                        searched_word_format8 = '4K Ultra Hd'
+                                        titlepaper = titlepapercls.find_all(
+                                            string=re.compile('.*{0}.*'.format(searched_word_format8)), recursive=True)
                                         if len(titlepaper) != 0:
                                             titleformat = "4K Ultra HD"
-                                        else:
-                                            searched_word_format8 = '4K Ultra Hd'
-                                            titlepaper = titlepapercls.find_all(string=re.compile('.*{0}.*'.format(searched_word_format8)),recursive=True)
-                                            if len(titlepaper) != 0:
-                                                titleformat = "4K Ultra HD"
-        except:
-            pass
+    except:
+        pass
 
-        return titleformat
+    return titleformat
 
-def autotires(soup,size):
-        titletiresize = ""
-        aboutloadrange = ""
-        swatchtiresize = ""
-        swatchloadindexrating = ""
-        swatchspeedrating = ""
-        swatchhightiresize = ""
-        titleloadrange = ""
-        #Title Tire Size
-        try:
-            title_ex = soup.find("title").text.split(" ")
-            count = 0
-            for i in title_ex:
-                count += 1
-                if '/' in i or 'x' in i:
-                    j = re.sub('\D', '', i)
-                    if j == size :
+
+def autotires(soup, size):
+    titletiresize = ""
+    aboutloadrange = ""
+    swatchtiresize = ""
+    swatchloadindexrating = ""
+    swatchspeedrating = ""
+    swatchhightiresize = ""
+    titleloadrange = ""
+    # Title Tire Size
+    try:
+        title_ex = soup.find("title").text.split(" ")
+        count = 0
+        for i in title_ex:
+            count += 1
+            if '/' in i or 'x' in i:
+                j = re.sub('\D', '', i)
+                if j == size:
+                    titletiresize = j
+                else:
+                    if len(j) == len(size):
                         titletiresize = j
                     else:
-                        if len(j) == len(size):
-                            titletiresize = j
-                        else:
-                            titletiresize = j
-                
-                if 'PLY' in i or '-ply' in i:
-                    titleloadrange = i
-                else:
-                    if titletiresize != '':
-                        j = re.sub('\D', '', title_ex[count])
-                        titleloadrange = j
-                        break           
-        except:
-            pass
+                        titletiresize = j
 
-        try:
-            tagcount = 0
-            abb = soup.find("div", attrs={"id": "feature-bullets"})
-            if abb != None:
-                about = abb.find("ul", class_="a-unordered-list a-vertical a-spacing-mini")
+            if 'PLY' in i or '-ply' in i:
+                titleloadrange = i
+            else:
+                if titletiresize != '':
+                    j = re.sub('\D', '', title_ex[count])
+                    titleloadrange = j
+                    break
+    except:
+        pass
+
+    try:
+        tagcount = 0
+        abb = soup.find("div", attrs={"id": "feature-bullets"})
+        if abb != None:
+            about = abb.find("ul", class_="a-unordered-list a-vertical a-spacing-mini")
+            if about != None:
+                about = about.find_all("span", class_="a-list-item")
                 if about != None:
-                    about = about.find_all("span", class_="a-list-item")
-                    if about != None:
-                        for j in about:
-                            prodet_text = j.text
-                            if "Load Range" in prodet_text.strip():
-                                if aboutloadrange == '':
-                                    val = prodet_text.strip()
-                                    val = val.replace("Load Range","").split(" ")
-                                    for k in val:
-                                        if '-Ply' in k: 
-                                            aboutloadrange = k
-                                            
-        except:
-            pass
+                    for j in about:
+                        prodet_text = j.text
+                        if "Load Range" in prodet_text.strip():
+                            if aboutloadrange == '':
+                                val = prodet_text.strip()
+                                val = val.replace("Load Range", "").split(" ")
+                                for k in val:
+                                    if '-Ply' in k:
+                                        aboutloadrange = k
 
-        try:
-            bd = soup.find("table", class_="a-normal a-spacing-micro")
-            if bd != None:
-                    title = bd.findAll('td', class_="a-span3")
-                    if title != None:
-                        value = bd.findAll('td', class_='a-span9')
-                        if value != None:
-                            for headeritem in bd.findAll('td', class_="a-span3"):
-                                
-                                infohead = title[tagcount]
-                                infodata = value[tagcount]
-                                tagcount = tagcount + 1
-                                
-                                if infohead.text.strip() == "Size":
-                                    j = re.sub('\D', '', infodata.text.strip())
-                                    if j == size:
-                                        swatchtiresize = j
-                                if infohead.text.strip() == "Load Index Rating":
-                                    swatchloadindexrating = infodata.text.strip()
-                                if infohead.text.strip() == "Speed Rating":
-                                    swatchspeedrating = infodata.text.strip()
-                                    
-        except:
+    except:
+        pass
 
-            pass
-
-        try:
-            title = soup.find("div", attrs={"id": "variation_size_name"})
+    try:
+        bd = soup.find("table", class_="a-normal a-spacing-micro")
+        if bd != None:
+            title = bd.findAll('td', class_="a-span3")
             if title != None:
-                title1 = title.find("div", class_="a-row")
-                if title1 != None:
-                    title1 = title1.find("label", class_="a-form-label")
-                    if title1 != None:
-                        c1 = title1.text.strip()
-                        if c1 != None:
-                            if c1 == 'Size:':
-                                hsize = title1.find("span", class_="selection")
-                                if hsize != None:
-                                    j = re.sub('\D', '', hsize.text.strip())
-                                    if j == size:
-                                        swatchhightiresize = j
-                                else:
-                                    title = title.find("select", attrs={"id": "native_dropdown_selected_size_name"})
-                                    if title != None:
-                                        title = title.find("option", class_="dropdownSelect")
-                                        if title != None:
-                                            j = re.sub('\D', '', title.text.strip())
-                                            if j == size:
-                                                swatchhightiresize = j
-                                           
-        except:
-            pass
+                value = bd.findAll('td', class_='a-span9')
+                if value != None:
+                    for headeritem in bd.findAll('td', class_="a-span3"):
 
-        return titletiresize,aboutloadrange,swatchtiresize,swatchloadindexrating,swatchspeedrating,swatchhightiresize,titleloadrange
+                        infohead = title[tagcount]
+                        infodata = value[tagcount]
+                        tagcount = tagcount + 1
+
+                        if infohead.text.strip() == "Size":
+                            j = re.sub('\D', '', infodata.text.strip())
+                            if j == size:
+                                swatchtiresize = j
+                        if infohead.text.strip() == "Load Index Rating":
+                            swatchloadindexrating = infodata.text.strip()
+                        if infohead.text.strip() == "Speed Rating":
+                            swatchspeedrating = infodata.text.strip()
+
+    except:
+
+        pass
+
+    try:
+        title = soup.find("div", attrs={"id": "variation_size_name"})
+        if title != None:
+            title1 = title.find("div", class_="a-row")
+            if title1 != None:
+                title1 = title1.find("label", class_="a-form-label")
+                if title1 != None:
+                    c1 = title1.text.strip()
+                    if c1 != None:
+                        if c1 == 'Size:':
+                            hsize = title1.find("span", class_="selection")
+                            if hsize != None:
+                                j = re.sub('\D', '', hsize.text.strip())
+                                if j == size:
+                                    swatchhightiresize = j
+                            else:
+                                title = title.find("select", attrs={"id": "native_dropdown_selected_size_name"})
+                                if title != None:
+                                    title = title.find("option", class_="dropdownSelect")
+                                    if title != None:
+                                        j = re.sub('\D', '', title.text.strip())
+                                        if j == size:
+                                            swatchhightiresize = j
+
+    except:
+        pass
+
+    return titletiresize, aboutloadrange, swatchtiresize, swatchloadindexrating, swatchspeedrating, swatchhightiresize, titleloadrange
+
 
 def videogames(soup):
     platform = ""
@@ -789,36 +822,36 @@ def videogames(soup):
     titleplatform = ""
     prodetplatformlist = []
     try:
-        platfor = soup.find("div", attrs={"id":"platformInformation_feature_div"}).text.strip()
-        if 'Platform : ' in platfor: 
-            platform = platfor.replace("Platform : ","").replace("|","").strip()
+        platfor = soup.find("div", attrs={"id": "platformInformation_feature_div"}).text.strip()
+        if 'Platform : ' in platfor:
+            platform = platfor.replace("Platform : ", "").replace("|", "").strip()
     except:
         pass
 
     try:
-            title = soup.find("div", attrs={"id": "variation_platform_for_display"})
-            if title != None:
-                title1 = title.find("div", class_="a-row")
-                if 'Platform For Display:' in title1.text.strip():
-                    swatchplatform = title1.text.replace("Platform For Display:","").strip()
-                elif 'Platform' in title1.text.strip():
-                    swatchplatform = title1.text.replace("Platform:","").strip()
+        title = soup.find("div", attrs={"id": "variation_platform_for_display"})
+        if title != None:
+            title1 = title.find("div", class_="a-row")
+            if 'Platform For Display:' in title1.text.strip():
+                swatchplatform = title1.text.replace("Platform For Display:", "").strip()
+            elif 'Platform' in title1.text.strip():
+                swatchplatform = title1.text.replace("Platform:", "").strip()
     except:
         pass
 
     try:
         titleplatforms = soup.find("title")
         for titleform in titleplatforms:
-            titleform = titleform.text.lower().replace(".","")
+            titleform = titleform.text.lower().replace(".", "")
             for i in platformlist:
                 if i in titleform:
-                    titleplatform = i   
-                    break 
+                    titleplatform = i
+                    break
     except:
         pass
 
     try:
-        prodetpaperclss = soup.find_all('div', attrs={"id":"productDescription_feature_div"})
+        prodetpaperclss = soup.find_all('div', attrs={"id": "productDescription_feature_div"})
         for prodetpapercls in prodetpaperclss:
             prodetpapercls = prodetpapercls.text.lower()
             for i in platformlist:
@@ -827,122 +860,125 @@ def videogames(soup):
     except:
         pass
 
-    return platform,swatchplatform,titleplatform,prodetplatformlist
+    return platform, swatchplatform, titleplatform, prodetplatformlist
 
-#Clothing
+
+# Clothing
 def clothing(soup):
-        titlecolorlist = []
-        titleclothingsizelist = []
-        prodetailcolor = ""
-        prodetailclothingsize = ""
+    titlecolorlist = []
+    titleclothingsizelist = []
+    prodetailcolor = ""
+    prodetailclothingsize = ""
 
-      #titlecolour
-        try:
-            if titlecolorlist == []:
-                titep = soup.find("span", attrs={"id":"productTitle"})
-                words = titep.text.replace("."," ").replace(","," ").replace("(","").replace(")","").split()
-                for word in words:
-                    titlecol = word.lower()
-                    for i in colorslist:
-                        if i == titlecol:
-                            titlecolorlist.append(i)
-            
-
-        except:
-            pass
-        #titlesize
-        try:
-            titlepapercls = soup.find("span", attrs={"id": 'productTitle'})
-            words = titlepapercls.text.replace("."," ").replace(","," ").replace("(","").replace(")","").split()
+    # titlecolour
+    try:
+        if titlecolorlist == []:
+            titep = soup.find("span", attrs={"id": "productTitle"})
+            words = titep.text.replace(".", " ").replace(",", " ").replace("(", "").replace(")", "").split()
             for word in words:
-                titlewords = word.lower()
-                for j in sizeslist:
-                    if j == titlewords:
-                        titleclothingsizelist.append(j)
-        except:
-            pass
-        #productdetail color - About this item
-        try:
-            prodet = soup.find_all('div', attrs={"id":"productDescription_feature_div"}) 
-            for k in prodet:
-                kk = k.find_all("p")
-                for pp in kk:
-                    p = pp.text.lower().replace("color: ","color:").replace("size: ","size:").replace("colorcolor","color").split(" ")
-                    for cs in p:
-                        if 'color:' in cs:
-                            prodetailcoo = cs.replace("color:","").strip()
-                            for prodetailcoll in colorslist:
-                                if prodetailcoo == prodetailcoll:
-                                    prodetailcolor = prodetailcoo
-                        if 'size:' in cs:
-                            prodetailcloths = cs.replace("size:","").strip()
-                            for prodetailcols in sizeslist:
-                                if prodetailcloths == prodetailcols:
-                                    prodetailcolor = prodetailcols
-            
-            if prodetailcolor == '':
-                count = 0
-                for i in prodet:
-                    i = i.text.lower().replace("color: ","color:").replace("color(","color:").replace("color:","color:").split(" ")
-                    for j in i:
-                        count += 1
-                        if "color:" in j:
-                                prodetailco = j.replace("color:","").replace(",","").strip()
-                        elif 'color' in j:
-                                prodetailco = i[count].replace(",","")
-                        for prodetailcol in colorslist:
-                            if prodetailco == prodetailcol:
-                                prodetailcolor = prodetailcol
-            
-            if prodetailcolor == '':
-                for word2 in prodet:
-                    prodetailwords = word2.text.lower().replace("."," ").replace(","," ").split(" ")
+                titlecol = word.lower()
+                for i in colorslist:
+                    if i == titlecol:
+                        titlecolorlist.append(i)
+
+
+    except:
+        pass
+    # titlesize
+    try:
+        titlepapercls = soup.find("span", attrs={"id": 'productTitle'})
+        words = titlepapercls.text.replace(".", " ").replace(",", " ").replace("(", "").replace(")", "").split()
+        for word in words:
+            titlewords = word.lower()
+            for j in sizeslist:
+                if j == titlewords:
+                    titleclothingsizelist.append(j)
+    except:
+        pass
+    # productdetail color - About this item
+    try:
+        prodet = soup.find_all('div', attrs={"id": "productDescription_feature_div"})
+        for k in prodet:
+            kk = k.find_all("p")
+            for pp in kk:
+                p = pp.text.lower().replace("color: ", "color:").replace("size: ", "size:").replace("colorcolor",
+                                                                                                    "color").split(" ")
+                for cs in p:
+                    if 'color:' in cs:
+                        prodetailcoo = cs.replace("color:", "").strip()
+                        for prodetailcoll in colorslist:
+                            if prodetailcoo == prodetailcoll:
+                                prodetailcolor = prodetailcoo
+                    if 'size:' in cs:
+                        prodetailcloths = cs.replace("size:", "").strip()
+                        for prodetailcols in sizeslist:
+                            if prodetailcloths == prodetailcols:
+                                prodetailcolor = prodetailcols
+
+        if prodetailcolor == '':
+            count = 0
+            for i in prodet:
+                i = i.text.lower().replace("color: ", "color:").replace("color(", "color:").replace("color:",
+                                                                                                    "color:").split(" ")
+                for j in i:
+                    count += 1
+                    if "color:" in j:
+                        prodetailco = j.replace("color:", "").replace(",", "").strip()
+                    elif 'color' in j:
+                        prodetailco = i[count].replace(",", "")
                     for prodetailcol in colorslist:
-                        for j in prodetailwords:
-                            if j == prodetailcol:
-                                prodetailcolor = j
+                        if prodetailco == prodetailcol:
+                            prodetailcolor = prodetailcol
 
-        except:
-            pass
-#productdetail size
-        try:
-            prodet = soup.find_all('div', class_='a-unordered-list a-vertical a-spacing-mini')
-            if prodetailclothingsize == '':
-                    count = 0
-                    for i in prodet:
-                        i = i.text.lower().replace("size: ","size:").replace("sizes(","size:").replace("shoes size","shoessize").replace("size details:","size:").replace("size;","size:").replace("(size ","size:").split(" ")
-                        for j in i:
-                            count += 1
-                            if "size:" in j:
-                                    prodetailclothingsize = j.replace("size:","").replace(",","").strip()
-                            elif "shoessize" in j:
+        if prodetailcolor == '':
+            for word2 in prodet:
+                prodetailwords = word2.text.lower().replace(".", " ").replace(",", " ").split(" ")
+                for prodetailcol in colorslist:
+                    for j in prodetailwords:
+                        if j == prodetailcol:
+                            prodetailcolor = j
 
-                                prodetailclothingsize = i[count].replace(",","")
-            if prodetailclothingsize == '':
-                
-                for word2 in prodet:
-                    prodetailwords = word2.text.lower().replace("."," ").replace(","," ").split(" ")
-                    for size in sizeslist:
-                        for j in prodetailwords:
-                            if j == size:
-                                prodetailclothingsize = j
-        except:
-            pass
-            
-        return titlecolorlist, titleclothingsizelist, prodetailclothingsize, prodetailcolor
+    except:
+        pass
+    # productdetail size
+    try:
+        prodet = soup.find_all('div', class_='a-unordered-list a-vertical a-spacing-mini')
+        if prodetailclothingsize == '':
+            count = 0
+            for i in prodet:
+                i = i.text.lower().replace("size: ", "size:").replace("sizes(", "size:").replace("shoes size",
+                                                                                                 "shoessize").replace(
+                    "size details:", "size:").replace("size;", "size:").replace("(size ", "size:").split(" ")
+                for j in i:
+                    count += 1
+                    if "size:" in j:
+                        prodetailclothingsize = j.replace("size:", "").replace(",", "").strip()
+                    elif "shoessize" in j:
 
+                        prodetailclothingsize = i[count].replace(",", "")
+        if prodetailclothingsize == '':
 
+            for word2 in prodet:
+                prodetailwords = word2.text.lower().replace(".", " ").replace(",", " ").split(" ")
+                for size in sizeslist:
+                    for j in prodetailwords:
+                        if j == size:
+                            prodetailclothingsize = j
+    except:
+        pass
+
+    return titlecolorlist, titleclothingsizelist, prodetailclothingsize, prodetailcolor
 
 
 tcount = 0
 
-def AttributeExtraction(lines):
 
+def AttributeExtraction(lines):
     bbprice = bbprice1 = bprice1 = listprice = x = bp = bpp = sp = swatch = swatchhl = info_select = info_unselect = brand = gender = color = iformat = ""
     manuf = partno = model = pack = shape = dimen = size = titlecard = brandtitle = my_list = aboutitem = productoverview = productdetails = productinfo = ""
     imageurl = bd = titleformat = prodetailISBN13 = prodetailISBN10 = titleISBN13 = titleISBN10 = modelnumber = disman = fdate = asin = countryo = material = metalstamp = metal = gemtype = ""
     totalgemweight = unitcount = itemdim = pageinfo = biketype = agerange = wheelsize = pattern = numberofitems = batteries = capacity = covermat = style = ""
-    fillmat = pillowtype = specialfeature = procar = season = fabrictype = itemthickness = finishtype = formfact = powersource = inoutusage = heatingmethod ="" 
+    fillmat = pillowtype = specialfeature = procar = season = fabrictype = itemthickness = finishtype = formfact = powersource = inoutusage = heatingmethod = ""
     recomuseforpro = itvolume = breadcrumb = itemw = publisher = language = pagecount = matchtype = matchtypecomments = isbn = isbn1 = highformat = highprice = ""
     setting = width = numberofstones = stoneweight = ""
     mpaarating = director = duration = releasedate = actors = studio = numberofdisc = ""
@@ -955,7 +991,7 @@ def AttributeExtraction(lines):
     review = ship = sold = ""
 
     hardwareinterface = compatibledevices = totalusbport = noofports = totalhdmiports = connectortype = ""
-    cabletype =  modelname = hardwareplatform = ops = pricing = typeofitem = titleplatform = platform = swatchplatform = prodetplatform = ''
+    cabletype = modelname = hardwareplatform = ops = pricing = typeofitem = titleplatform = platform = swatchplatform = prodetplatform = ''
     prodetplatformlist = ''
 
     titlecolor = titleclothingsize = prodetailcolor = prodetailclothingsize = swatchcolor = swatchsize = ""
@@ -965,13 +1001,14 @@ def AttributeExtraction(lines):
 
     driver.get(lines[3])
     try:
-        ele = WebDriverWait(driver, 15).until( #using explicit wait for 10 seconds
-        EC.presence_of_element_located((By.CSS_SELECTOR, "h2")) #checking for the element with 'h2'as its CSS
-    )
+        ele = WebDriverWait(driver, 15).until(  # using explicit wait for 10 seconds
+            EC.presence_of_element_located((By.CSS_SELECTOR, "h2"))  # checking for the element with 'h2'as its CSS
+        )
     except:
         print("Timeout Exception: Page did not load within 15 seconds.")
 
-    cursor.execute('UPDATE "ECHO_AE_AZ_In" SET "Record_Status" = (%s) WHERE "Batch_ID" = (%s) and "AZ_URL" = (%s);',('Initiated',Batch ,lines[2]))
+    cursor.execute('UPDATE "ECHO_AE_AZ_In" SET "Record_Status" = (%s) WHERE "Batch_ID" = (%s) and "AZ_URL" = (%s);',
+                   ('Initiated', Batch, lines[2]))
     connection.commit()
 
     pgproblem = ''
@@ -1038,19 +1075,18 @@ def AttributeExtraction(lines):
                                 li = soup.find("li", class_="swatchElement selected")
                                 price = li.find("span", class_="a-color-base")
 
-
-            listprice = price.text.strip().replace("from","")
+            listprice = price.text.strip().replace("from", "")
         except AttributeError:
             pass
-            
+
         try:
             breadcrumbtag = soup.find("ul", class_="a-unordered-list a-horizontal a-size-small")
             breadcrumb = breadcrumbtag.text
-            #print("Breadcrumb=", breadcrumb)
+            # print("Breadcrumb=", breadcrumb)
         except:
             pass
-            
-        #Product Information
+
+        # Product Information
         try:
             abb = soup.find("table", attrs={"id": "productDetails_detailBullets_sections1"})
             if abb != None:
@@ -1071,188 +1107,188 @@ def AttributeExtraction(lines):
                             if p == "Brand" or p == "Brand Name":
                                 brand = p1
                                 brand = brand.replace("\â€”", '')
-                                #print("brand =", brand)
+                                # print("brand =", brand)
                             if p == "Gender":
                                 gender = p1
-                                #print("gender =", gender)
+                                # print("gender =", gender)
                             if p == "Color" or p == "Color Name":
                                 color = p1
-                                #print("color =",color)
+                                # print("color =",color)
                             if p == "Format":
                                 iformat = p1
-                                #print("iformat =",iformat )
+                                # print("iformat =",iformat )
                             if p == "Manufacturer":
                                 manuf = p1
-                                #print("manuf =",manuf )
+                                # print("manuf =",manuf )
                             if p == "Manufacturer Part Number":
                                 partno = p1
-                                #print("partno =",partno )
+                                # print("partno =",partno )
                             if p == "Model":
                                 model = p1
-                                #print("model =", model)
+                                # print("model =", model)
                             if p == "Count Per Pack":
                                 pack = p1
-                                #print("pack =", pack)
+                                # print("pack =", pack)
                             if p == "Shape":
                                 shape = p1
-                                #print("shape=", shape)
+                                # print("shape=", shape)
                             if p == "Product Dimensions" or p == "Package Dimensions":
                                 dimen = p1
-                                #print("dimen =", dimen)
+                                # print("dimen =", dimen)
                             if p == "Size":
                                 size = p1
-                                #print("size=", size)
+                                # print("size=", size)
                             if p == "ASIN":
                                 asin = p1
-                                #print("Asin =", asin)
+                                # print("Asin =", asin)
                             if p == "Item Weight":
                                 itemw = p1
-                                #print("Item Weight =", itemw)
+                                # print("Item Weight =", itemw)
                             if p == "Department":
                                 gender = p1
                                 if gender == "unisex-adult":
                                     gender = "Unisex"
-                                    #print("Gender =", gender)
+                                    # print("Gender =", gender)
                             if p == "Bike Type":
                                 biketype = p1
-                                #print("Bike Type =", biketype)
+                                # print("Bike Type =", biketype)
                             if p == "Age Range (Description)":
                                 agerange = p1
-                                #print("Age Range =", agerange )
+                                # print("Age Range =", agerange )
                             if p == "Wheel Size":
                                 wheelsize = p1
-                                #print("Wheel Size =", wheelsize)
+                                # print("Wheel Size =", wheelsize)
                             if p == "Pattern":
                                 pattern = p1
-                                #print("Pattern =", pattern)
+                                # print("Pattern =", pattern)
                             if p == "Material":
                                 material = p1
-                                #print("Material =", material)
+                                # print("Material =", material)
                             if p == "Unit Count":
                                 unitcount = p1
-                                #print("Unit Count =", unitcount)
+                                # print("Unit Count =", unitcount)
                             if p == "Number of Items":
                                 numberofitems = p1
-                                #print("Number of Items=", numberofitems)
+                                # print("Number of Items=", numberofitems)
                             if p == "Batteries":
                                 batteries = p1
-                                #print("Batteries =", batteries)
+                                # print("Batteries =", batteries)
                             if p == "Date First Available":
                                 fdate = p1
-                                #print("Date First Available =", fdate)
+                                # print("Date First Available =", fdate)
                             if p == "Country of Origin":
                                 countryo = p1
-                                #print("Country of Origin =", countryo)
+                                # print("Country of Origin =", countryo)
                             if p == "Cover Material":
                                 covermat = p1
-                                #print("Cover Material =", covermat)
+                                # print("Cover Material =", covermat)
                             if p == "Style":
                                 style = p1
-                                #print("Style =", style)
+                                # print("Style =", style)
                             if p == "Fill Material":
                                 fillmat = p1
-                                #print("Fill Material =", fillmat)
+                                # print("Fill Material =", fillmat)
                             if p == "Pillow Type":
                                 pillowtype = p1
-                                #print("Pillow Type =", pillowtype)
+                                # print("Pillow Type =", pillowtype)
                             if p == "Special Feature":
                                 specialfeature = p1
-                                #print("Special Feature =", specialfeature)
+                                # print("Special Feature =", specialfeature)
                             if p == "Product Care Instructions":
                                 procar = p1
-                                #print("Product Care Instructions =", procar)
+                                # print("Product Care Instructions =", procar)
                             if p == "Seasons":
                                 season = p1
-                                #print("Seasons =", season)
+                                # print("Seasons =", season)
                             if p == "Fabric Type":
                                 fabrictype = p1
-                                #print("Fabric Type =", fabrictype)
+                                # print("Fabric Type =", fabrictype)
                             if p == "Item Thickness":
                                 itemthickness = p1
-                                #print("Item Thickness =", itemthickness)
+                                # print("Item Thickness =", itemthickness)
                             if p == "Finish Type":
                                 finishtype = p1
-                                #print("Finish Type =", finishtype)
+                                # print("Finish Type =", finishtype)
                             if p == "Form Factor":
                                 formfact = p1
-                                #print("Form Factor =", formfact)
+                                # print("Form Factor =", formfact)
                             if p == "Indoor/Outdoor Usage":
                                 inoutusage = p1
-                                #print("Indoor/Outdoor Usage =", inoutusage)
+                                # print("Indoor/Outdoor Usage =", inoutusage)
                             if p == "Power Source":
                                 powersource = p1
-                                #print("Power Source =", powersource)
+                                # print("Power Source =", powersource)
                             if p == "Heating Method":
                                 heatingmethod = p1
-                                #print("Heating Method =", heatingmethod)
+                                # print("Heating Method =", heatingmethod)
                             if p == "Recommended Uses For Product":
                                 recomuseforpro = p1
-                                #print("Recommended Uses For Product =", recomuseforpro)
+                                # print("Recommended Uses For Product =", recomuseforpro)
                             if p == "Item model number":
                                 modelnumber = p1
-                                #print("Item model number =", modelnumber)
-                            #Movies & TV 
+                                # print("Item model number =", modelnumber)
+                            # Movies & TV
                             if p == "MPAA rating":
                                 mpaarating = p1
-                                #print("MPAA rating=", mpaarating)
+                                # print("MPAA rating=", mpaarating)
                             if p == "Director":
                                 director = infodata.exte.strip()
-                                #print("Director=",director) 
+                                # print("Director=",director)
                             if p == "Run time":
                                 duration = p1
-                                #print("Run time=",duration)
+                                # print("Run time=",duration)
                             if p == "Release date" or p == "Original Release Date":
                                 releasedate = p1
-                                #print("Release date=",releasedate)
+                                # print("Release date=",releasedate)
                             if p == "Actors":
                                 actors = p1
-                                #print("Actors=",actors)
+                                # print("Actors=",actors)
                             if p == "Studio":
                                 studio = p1
-                                #print("Studio=",studio)
+                                # print("Studio=",studio)
                             if p == "Number of discs":
                                 numberofdisc = p1
-                                #print("Number of discs=",numberofdisc)   
+                                # print("Number of discs=",numberofdisc)
                             if p == "Genre":
                                 genre = p1
-                                #print("Genre=",genre)
+                                # print("Genre=",genre)
                             if p == "Contributor":
                                 contributor = p1
-                                #print("Contributor=",contributor)
+                                # print("Contributor=",contributor)
                             if p == "Audio Description":
-                                audiodesc= p1
-                                #print("Audio Description=",audiodesc)   
+                                audiodesc = p1
+                                # print("Audio Description=",audiodesc)
                             if p == "Dubbed":
                                 dubbed = p1
-                                #print("Dubbed=",dubbed)   
+                                # print("Dubbed=",dubbed)
                             if p == "Subtitles":
                                 subtitles = p1
-                                #print("Subtitles=",subtitles)   
+                                # print("Subtitles=",subtitles)
                             if p == "Producers":
                                 producers = p1
-                                #print("Producers=",producers)   
+                                # print("Producers=",producers)
                             if p == "Aspect Ratio":
                                 aspectratio = p1
-                                #print("Aspect Ratio=",aspectratio) 
+                                # print("Aspect Ratio=",aspectratio)
                             if p == "Media Format":
                                 mediaformat = p1
-                                #print("Media Format=",mediaformat) 
-                            #Music
+                                # print("Media Format=",mediaformat)
+                            # Music
                             if p == "Body Material":
                                 bodymaterial = p1
-                                #print("Body Material=",bodymaterial)  
+                                # print("Body Material=",bodymaterial)
                             if p == "Material Type":
                                 materialtype = p1
-                                #print("Material Type=",materialtype)
+                                # print("Material Type=",materialtype)
                             if p == "Instrument Key":
                                 instrumentkey = p1
-                                #print("Instrument Key=",instrumentkey)   
+                                # print("Instrument Key=",instrumentkey)
                             if p == "Label":
                                 label = p1
-                                #print("Label=",label)
+                                # print("Label=",label)
                             if p == "Ply Rating":
                                 loadrange = p1
-                             #Video Games
+                            # Video Games
                             if p == "Pricing":
                                 pricing = p1
                             if p == "Type of item":
@@ -1261,7 +1297,7 @@ def AttributeExtraction(lines):
         except:
             pass
 
-          #Product Information
+        # Product Information
         try:
             abb = soup.find("table", attrs={"id": "productDetails_techSpec_section_1"})
             if abb != None:
@@ -1276,239 +1312,239 @@ def AttributeExtraction(lines):
                             p = p.replace('\n', '')
                             p = p.replace(':', '')
                             p = p.strip()
-                            
+
                         for k in p1:
                             p1 = k.text.strip()
                             if p == "Brand" or p == "Brand Name":
                                 brand = p1
                                 brand = brand.replace("\â€”", '')
-                                #print("brand =", brand)
+                                # print("brand =", brand)
                             if p == "Gender":
                                 gender = p1
-                                #print("gender =", gender)
+                                # print("gender =", gender)
                             if p == "Color" or p == "Color Name":
                                 color = p1
-                                #print("color =",color)
+                                # print("color =",color)
                             if p == "Format":
                                 iformat = p1
-                                #print("iformat =",iformat )
+                                # print("iformat =",iformat )
                             if p == "Manufacturer":
                                 manuf = p1
-                                #print("manuf =",manuf )
+                                # print("manuf =",manuf )
                             if p == "Manufacturer Part Number":
                                 partno = p1
-                                #print("partno =",partno )
+                                # print("partno =",partno )
                             if p == "Model":
                                 model = p1
-                                #print("model =", model)
+                                # print("model =", model)
                             if p == "Count Per Pack":
                                 pack = p1
-                                #print("pack =", pack)
+                                # print("pack =", pack)
                             if p == "Shape":
                                 shape = p1
-                                #print("shape=", shape)
+                                # print("shape=", shape)
                             if p == "Product Dimensions" or p == "Package Dimensions" or p == "Item Dimensions LxWxH":
                                 dimen = p1
-                                #print("dimen =", dimen)
+                                # print("dimen =", dimen)
                             if p == "Size":
                                 size = p1
-                                #print("size=", size)
+                                # print("size=", size)
                             if p == "ASIN":
                                 asin = p1
-                                #print("Asin =", asin)
+                                # print("Asin =", asin)
                             if p == "Item Weight":
                                 itemw = p1
-                                #print("Item Weight =", itemw)
+                                # print("Item Weight =", itemw)
                             if p == "Department":
                                 gender = p1
                                 if gender == "unisex-adult":
                                     gender = "Unisex"
-                                    #print("Gender =", gender)
+                                    # print("Gender =", gender)
                             if p == "Bike Type":
                                 biketype = p1
-                                #print("Bike Type =", biketype)
+                                # print("Bike Type =", biketype)
                             if p == "Age Range (Description)":
                                 agerange = p1
-                                #print("Age Range =", agerange )
+                                # print("Age Range =", agerange )
                             if p == "Wheel Size":
                                 wheelsize = p1
-                                #print("Wheel Size =", wheelsize)
+                                # print("Wheel Size =", wheelsize)
                             if p == "Pattern":
                                 pattern = p1
-                                #print("Pattern =", pattern)
+                                # print("Pattern =", pattern)
                             if p == "Material":
                                 material = p1
-                                #print("Material =", material)
+                                # print("Material =", material)
                             if p == "Unit Count":
                                 unitcount = p1
-                                #print("Unit Count =", unitcount)
+                                # print("Unit Count =", unitcount)
                             if p == "Number of Items":
                                 numberofitems = p1
-                                #print("Number of Items=", numberofitems)
+                                # print("Number of Items=", numberofitems)
                             if p == "Batteries":
                                 batteries = p1
-                                #print("Batteries =", batteries)
+                                # print("Batteries =", batteries)
                             if p == "Date First Available":
                                 fdate = p1
-                                #print("Date First Available =", fdate)
+                                # print("Date First Available =", fdate)
                             if p == "Country of Origin":
                                 countryo = p1
-                                #print("Country of Origin =", countryo)
+                                # print("Country of Origin =", countryo)
                             if p == "Cover Material":
                                 covermat = p1
-                                #print("Cover Material =", covermat)
+                                # print("Cover Material =", covermat)
                             if p == "Style":
                                 style = p1
-                                #print("Style =", style)
+                                # print("Style =", style)
                             if p == "Fill Material":
                                 fillmat = p1
-                                #print("Fill Material =", fillmat)
+                                # print("Fill Material =", fillmat)
                             if p == "Pillow Type":
                                 pillowtype = p1
-                                #print("Pillow Type =", pillowtype)
+                                # print("Pillow Type =", pillowtype)
                             if p == "Special Feature":
                                 specialfeature = p1
-                                #print("Special Feature =", specialfeature)
+                                # print("Special Feature =", specialfeature)
                             if p == "Product Care Instructions":
                                 procar = p1
-                                #print("Product Care Instructions =", procar)
+                                # print("Product Care Instructions =", procar)
                             if p == "Seasons":
                                 season = p1
-                                #print("Seasons =", season)
+                                # print("Seasons =", season)
                             if p == "Fabric Type":
                                 fabrictype = p1
-                                #print("Fabric Type =", fabrictype)
+                                # print("Fabric Type =", fabrictype)
                             if p == "Item Thickness":
                                 itemthickness = p1
-                                #print("Item Thickness =", itemthickness)
+                                # print("Item Thickness =", itemthickness)
                             if p == "Finish Type":
                                 finishtype = p1
-                                #print("Finish Type =", finishtype)
+                                # print("Finish Type =", finishtype)
                             if p == "Form Factor":
                                 formfact = p1
-                                #print("Form Factor =", formfact)
+                                # print("Form Factor =", formfact)
                             if p == "Indoor/Outdoor Usage":
                                 inoutusage = p1
-                                #print("Indoor/Outdoor Usage =", inoutusage)
+                                # print("Indoor/Outdoor Usage =", inoutusage)
                             if p == "Power Source":
                                 powersource = p1
-                                #print("Power Source =", powersource)
+                                # print("Power Source =", powersource)
                             if p == "Heating Method":
                                 heatingmethod = p1
-                                #print("Heating Method =", heatingmethod)
+                                # print("Heating Method =", heatingmethod)
                             if p == "Recommended Uses For Product":
                                 recomuseforpro = p1
-                                #print("Recommended Uses For Product =", recomuseforpro)
+                                # print("Recommended Uses For Product =", recomuseforpro)
                             if p == "Item model number":
                                 modelnumber = p1
-                                #print("Item model number =", modelnumber)
-                            #Movies & TV 
+                                # print("Item model number =", modelnumber)
+                            # Movies & TV
                             if p == "MPAA rating":
                                 mpaarating = p1
-                                #print("MPAA rating=", mpaarating)
+                                # print("MPAA rating=", mpaarating)
                             if p == "Director":
                                 director = infodata.exte.strip()
-                                #print("Director=",director) 
+                                # print("Director=",director)
                             if p == "Run time":
                                 duration = p1
-                                #print("Run time=",duration)
+                                # print("Run time=",duration)
                             if p == "Release date" or p == "Original Release Date":
                                 releasedate = p1
-                                #print("Release date=",releasedate)
+                                # print("Release date=",releasedate)
                             if p == "Actors":
                                 actors = p1
-                                #print("Actors=",actors)
+                                # print("Actors=",actors)
                             if p == "Studio":
                                 studio = p1
-                                #print("Studio=",studio)
+                                # print("Studio=",studio)
                             if p == "Number of discs":
                                 numberofdisc = p1
-                                #print("Number of discs=",numberofdisc)   
+                                # print("Number of discs=",numberofdisc)
                             if p == "Genre":
                                 genre = p1
-                                #print("Genre=",genre)
+                                # print("Genre=",genre)
                             if p == "Contributor":
                                 contributor = p1
-                                #print("Contributor=",contributor)
+                                # print("Contributor=",contributor)
                             if p == "Audio Description":
-                                audiodesc= p1
-                                #print("Audio Description=",audiodesc)   
+                                audiodesc = p1
+                                # print("Audio Description=",audiodesc)
                             if p == "Dubbed":
                                 dubbed = p1
-                                #print("Dubbed=",dubbed)   
+                                # print("Dubbed=",dubbed)
                             if p == "Subtitles":
                                 subtitles = p1
-                                #print("Subtitles=",subtitles)   
+                                # print("Subtitles=",subtitles)
                             if p == "Producers":
                                 producers = p1
-                                #print("Producers=",producers)   
+                                # print("Producers=",producers)
                             if p == "Aspect Ratio":
                                 aspectratio = p1
-                                #print("Aspect Ratio=",aspectratio) 
+                                # print("Aspect Ratio=",aspectratio)
                             if p == "Media Format":
                                 mediaformat = p1
-                                #print("Media Format=",mediaformat) 
-                            #Music
+                                # print("Media Format=",mediaformat)
+                            # Music
                             if p == "Body Material":
                                 bodymaterial = p1
-                                #print("Body Material=",bodymaterial)  
+                                # print("Body Material=",bodymaterial)
                             if p == "Material Type":
                                 materialtype = p1
-                                #print("Material Type=",materialtype)
+                                # print("Material Type=",materialtype)
                             if p == "Instrument Key":
                                 instrumentkey = p1
-                                #print("Instrument Key=",instrumentkey)   
+                                # print("Instrument Key=",instrumentkey)
                             if p == "Label":
                                 label = p1
-                                #print("Label=",label)
-                            
-                            #Auto & Tires
+                                # print("Label=",label)
+
+                            # Auto & Tires
                             if p == "Rim Size":
                                 rimsize = p1
-                                #print("Rim Size= ",rimsize)
+                                # print("Rim Size= ",rimsize)
                             if p == "Section Width":
                                 secwidth = p1
-                                #print("Section Width= ",secwidth)
+                                # print("Section Width= ",secwidth)
                             if p == "Tire Aspect Ratio":
                                 tireaspectratio = p1
-                                #print("Tire Aspect Ratio=",tireaspectratio)
+                                # print("Tire Aspect Ratio=",tireaspectratio)
                             if p == "Load Index Rating":
                                 loadindexrating = p1
-                                #print("Load Index Rating =",loadindexrating)
+                                # print("Load Index Rating =",loadindexrating)
                             if p == "Speed Rating":
                                 speedrating = p1
-                                #print("Speed Rating =",speedrating)
+                                # print("Speed Rating =",speedrating)
                             if p == "Load Capacity":
                                 loadcapacity = p1
-                                #print("Load Capacity =",loadcapacity)
+                                # print("Load Capacity =",loadcapacity)
                             if p == "Tread Depth":
                                 treaddepth = p1
-                                #print("Tread Depth =",treaddepth)
+                                # print("Tread Depth =",treaddepth)
                             if p == "Tread Type":
                                 treadtype = p1
-                                #print("Tread Type =",treadtype)
+                                # print("Tread Type =",treadtype)
                             if p == "Rim Width":
                                 rimwidth = p1
-                                #print("Rim Width =",rimwidth)
+                                # print("Rim Width =",rimwidth)
                             if p == "Tire Diameter":
-                                tirediameter= p1
-                                #print("Tire Diameter =",tirediameter)
+                                tirediameter = p1
+                                # print("Tire Diameter =",tirediameter)
                             if p == "OEM Part Number":
-                                oempartno= p1
-                                #print("OEM Part Number =",oempartno)
+                                oempartno = p1
+                                # print("OEM Part Number =",oempartno)
                             if p == "Construction":
                                 construction = p1
-                                #print("Construction =",construction)
+                                # print("Construction =",construction)
                             if p == "Ply Rating":
                                 loadrange = p1
-                                #print("Ply Rating =", loadrange)
-                            #Videogames
+                                # print("Ply Rating =", loadrange)
+                            # Videogames
                             if p == "Hardware Platform":
                                 hardwareplatform = p1
         except:
             pass
-        
-        #Swatch Color name
+
+        # Swatch Color name
         if color == '':
             title = soup.find("div", attrs={"id": "variation_color_name"})
             if title != None:
@@ -1531,7 +1567,7 @@ def AttributeExtraction(lines):
                                         if title != None:
                                             color = title.text.strip()
                                             # print("Color1 =", color)
-        #Swatch Details size
+        # Swatch Details size
         if size == '':
             title = soup.find("div", attrs={"id": "variation_size_name"})
             if title != None:
@@ -1553,7 +1589,7 @@ def AttributeExtraction(lines):
                                         if title != None:
                                             size = title.text.strip()
                                             # print("Size1 =", size)
-        #Swatch Details Style                                   
+        # Swatch Details Style
         if style == '':
             title = soup.find("div", attrs={"id": "variation_style_name"})
             if title != None:
@@ -1589,7 +1625,7 @@ def AttributeExtraction(lines):
                                 gender = "Female"
                                 # print("gender = ", gender)
 
-        #Product Details
+        # Product Details
         abb = soup.find("div", attrs={"id": "detailBullets_feature_div"})
         if abb != None:
             abb = abb.find_all("span", class_="a-list-item")
@@ -1654,7 +1690,7 @@ def AttributeExtraction(lines):
                         if pagecount == '':
                             if p == "Paperback" or p == "Print length" or p == "Hardcover" or p == "Board Book" or p == "Calendar" or p == "Library Binding" or p == "Spiral-bound":
                                 pagecount = p1
-                                #print("Paperback =", paperpack)
+                                # print("Paperback =", paperpack)
                         if itemw == '':
                             if p == "Item Weight":
                                 itemw = p1
@@ -1667,85 +1703,85 @@ def AttributeExtraction(lines):
                             if p == "ISBN-13":
                                 isbn1 = p1
                                 # print("ISBN-13 =", isbn1)
-                        #Movies & TV 
+                        # Movies & TV
                         if mpaarating == '':
                             if p == "MPAA rating":
                                 mpaarating = p1
-                                #print("MPAA rating=", mpaarating)
+                                # print("MPAA rating=", mpaarating)
                         if dimen == '':
                             if p == "Product Dimensions" or p == "Package Dimensions":
                                 dimen = p1
-                                #print("dimen =", dimen)
+                                # print("dimen =", dimen)
                         if director == '':
                             if p == "Director":
                                 director = p1
-                                #print("Director=",director)
+                                # print("Director=",director)
                         if iformat == '':
                             if p == "Format":
                                 iformat = p1
-                                #print("Format=",iformat)
+                                # print("Format=",iformat)
                         if mediaformat == '':
                             if p == "Media Format":
                                 mediaformat = p1
-                                #print("Media Format=",mediaformat)
+                                # print("Media Format=",mediaformat)
                         if duration == '':
                             if p == "Run time":
                                 duration = p1
-                                #print("Run time=",duration)
+                                # print("Run time=",duration)
                         if releasedate == '':
                             if p == "Release date":
                                 releasedate = p1
-                                #print("Release date=",releasedate)
+                                # print("Release date=",releasedate)
                         if actors == '':
                             if p == "Actors":
                                 actors = p1
-                                #print("Actors=",actors)
+                                # print("Actors=",actors)
                         if studio == '':
                             if p == "Studio":
                                 studio = p1
-                                #print("Studio=",studio)
+                                # print("Studio=",studio)
                         if numberofdisc == '':
                             if p == "Number of discs":
                                 numberofdisc = p1
-                                #print("Number of discs=",numberofdisc)
+                                # print("Number of discs=",numberofdisc)
                         if genre == '':
                             if p == "Genre":
                                 genre = p1
-                                #print("Genre=",genre)
+                                # print("Genre=",genre)
                         if contributor == '':
                             if p == "Contributor":
                                 contributor = p1
-                                #print("Contributor=",contributor)
+                                # print("Contributor=",contributor)
                         if audiodesc == '':
                             if p == "Audio Description":
-                                audiodesc  = p1
-                                #print("Audio Description=",audiodesc)
+                                audiodesc = p1
+                                # print("Audio Description=",audiodesc)
                         if dubbed == '':
                             if p == "Dubbed":
                                 dubbed = p1
-                                #print("Dubbed=",dubbed)
+                                # print("Dubbed=",dubbed)
                         if subtitles == '':
                             if p == "Subtitles":
                                 subtitles = p1
-                                #print("Subtitles=",subtitles)
+                                # print("Subtitles=",subtitles)
                         if producers == '':
                             if p == "Producers":
                                 producers = p1
-                                #print("Producers=",producers)
+                                # print("Producers=",producers)
                         if aspectratio == '':
                             if p == "Aspect Ratio":
                                 aspectratio = p1
-                                #print("Aspect Ratio=",aspectratio)
+                                # print("Aspect Ratio=",aspectratio)
                         if label == '':
                             if p == "Label":
                                 label = p1
-                                #print("Label=",label)
-                        #Auto & Tires
+                                # print("Label=",label)
+                        # Auto & Tires
                         if loadrange == '':
                             if p == "Ply Rating":
                                 loadrange = p1
 
-        #Product Details
+        # Product Details
         tagcount = 0
         bdd = soup.find("div", attrs={"id": "productOverview_feature_div"})
         if bdd != None:
@@ -1852,85 +1888,85 @@ def AttributeExtraction(lines):
                             if genre == '':
                                 if infohead.text.strip() == "Genre":
                                     genre = infodata.text.strip()
-                                    #print("Genre=",genre)
+                                    # print("Genre=",genre)
                             if contributor == '':
                                 if infohead.text.strip() == "Contributor":
                                     contributor = infodata.text.strip()
-                                    #print("Contributor=",contributor)
+                                    # print("Contributor=",contributor)
                             if duration == '':
                                 if infohead.text.strip() == "Runtime":
                                     duration = infodata.text.strip()
-                                    #print("Runtime=",duration)
+                                    # print("Runtime=",duration)
                             if language == '':
                                 if infohead.text.strip() == "Language":
                                     language = infodata.text.strip()
-                                    #print("Language=",language)
+                                    # print("Language=",language)
                             if numberofdisc == '':
                                 if infohead.text.strip() == "Number Of Discs":
                                     numberofdisc = infodata.text.strip()
-                                    #print("Number Of Discs=",numberofdisc)
+                                    # print("Number Of Discs=",numberofdisc)
                             if instrumentkey == '':
                                 if infohead.text.strip() == "Instrument Key":
                                     instrumentkey = infodata.text.strip()
-                                    #print("Instrument Key=",instrumentkey) 
+                                    # print("Instrument Key=",instrumentkey)
 
-                            #Auto Tires
+                            # Auto Tires
                             if rimsize == '':
                                 if infohead.text.strip() == "Rim Size":
                                     rimsize = infodata.text.strip()
-                                    #print("Rim Size= ",rimsize)
+                                    # print("Rim Size= ",rimsize)
                             if secwidth == '':
                                 if infohead.text.strip() == "Section Width":
                                     secwidth = infodata.text.strip()
-                                    #print("Section Width= ",secwidth)
+                                    # print("Section Width= ",secwidth)
                             if tireaspectratio == '':
                                 if infohead.text.strip() == "Tire Aspect Ratio":
                                     tireaspectratio = infodata.text.strip()
-                                    #print("Tire Aspect Ratio=",tireaspectratio)
+                                    # print("Tire Aspect Ratio=",tireaspectratio)
                             if loadindexrating == '':
                                 if infohead.text.strip() == "Load Index Rating":
                                     loadindexrating = infodata.text.strip()
-                                    #print("Load Index Rating =",loadindexrating)
+                                    # print("Load Index Rating =",loadindexrating)
                             if speedrating == '':
                                 if infohead.text.strip() == "Speed Rating":
                                     speedrating = infodata.text.strip()
-                                    #print("Speed Rating =",speedrating)
+                                    # print("Speed Rating =",speedrating)
                             if loadcapacity == '':
                                 if infohead.text.strip() == "Load Capacity":
                                     loadcapacity = infodata.text.strip()
-                                    #print("Load Capacity =",loadcapacity)
+                                    # print("Load Capacity =",loadcapacity)
                             if treaddepth == '':
                                 if infohead.text.strip() == "Tread Depth":
                                     treaddepth = infodata.text.strip()
-                                    #print("Tread Depth =",treaddepth)
+                                    # print("Tread Depth =",treaddepth)
                             if treadtype == '':
                                 if infohead.text.strip() == "Tread Type":
                                     treadtype = infodata.text.strip()
-                                    #print("Tread Type =",treaddepth)
+                                    # print("Tread Type =",treaddepth)
                             if rimwidth == '':
                                 if infohead.text.strip() == "Rim Width":
                                     rimwidth = infodata.text.strip()
-                                    #print("Rim Width =",rimwidth)
+                                    # print("Rim Width =",rimwidth)
                             if tirediameter == '':
                                 if infohead.text.strip() == "Tire Diameter":
-                                    tirediameter= infodata.text.strip()
-                                    #print("Tire Diameter =",tirediameter)
+                                    tirediameter = infodata.text.strip()
+                                    # print("Tire Diameter =",tirediameter)
                             if oempartno == '':
                                 if infohead.text.strip() == "OEM Part Number":
-                                    oempartno= infodata.text.strip()
-                                    #print("OEM Part Number =",oempartno)
+                                    oempartno = infodata.text.strip()
+                                    # print("OEM Part Number =",oempartno)
                             if construction == '':
                                 if infohead.text.strip() == "Construction":
                                     construction = infodata.text.strip()
-                                    #print("Construction =",construction)    
+                                    # print("Construction =",construction)
                             if season == '':
                                 if infohead.text.strip() == "Seasons":
                                     season = infodata.text.strip()
-                                    #print("Seasons =",season)  
+                                    # print("Seasons =",season)
                             if loadrange == '':
                                 if infohead.text.strip() == "Ply Rating":
-                                    loadrange = infodata.text.strip() 
-                            #Videogames
+                                    loadrange = infodata.text.strip()
+                                    # Videogames
                             if hardwareinterface == '':
                                 if infohead.text.strip() == "Hardware Interface":
                                     hardwareinterface = infodata.text.strip()
@@ -1966,228 +2002,228 @@ def AttributeExtraction(lines):
                                     hardwareplatform = infodata.text.strip()
                             if ops == '':
                                 if infohead.text.strip() == "Operating System":
-                                    ops = infodata.text.strip()           
-        
+                                    ops = infodata.text.strip()
+
         try:
-                bd = bdd.find("table", class_="a-normal a-spacing-micro")
-                tagcount = 0
-                if bd != None:
-                    title = bd.findAll('td', class_="a-span3")
-                    if title != None:
-                        value = bd.findAll('td', class_='a-span9')
-                        if value != None:
-                            for headeritem in bd.findAll('td', class_="a-span3"):
+            bd = bdd.find("table", class_="a-normal a-spacing-micro")
+            tagcount = 0
+            if bd != None:
+                title = bd.findAll('td', class_="a-span3")
+                if title != None:
+                    value = bd.findAll('td', class_='a-span9')
+                    if value != None:
+                        for headeritem in bd.findAll('td', class_="a-span3"):
 
-                                infohead = title[tagcount]
-                                infodata = value[tagcount]
-                                tagcount = tagcount + 1
-                                # print(infohead.text)
-                                if brand == '':
-                                    if infohead.text.strip() == "Brand":
-                                        brand = infodata.text.strip()
-                                        # print("Brand1 =", brand)
-                                if pageinfo == '':
-                                    if infohead.text.strip() == "Package Information" or infohead.text.strip() == "Package Dimensions":
-                                        paginfo = infodata.text.strip()
-                                        # print("Package Information =", paginfo)
-                                if color == '':
-                                    if infohead.text.strip() == "Color" or infohead.text.strip() == "Ink Color":
-                                        color = infodata.text.strip()
-                                        # print("Color =",color)
-                                if itvolume == '':
-                                    if infohead.text.strip() == "Item Volume":
-                                        itvolume = infodata.text.strip()
-                                        # print("Item Volume =", itvolume )
-                                if material == '':
-                                    if infohead.text.strip() == "Material":
-                                        material = infodata.text.strip()
-                                        # print("Material =", material )
-                                if size == '':
-                                    if infohead.text.strip() == "Size":
-                                        size = infodata.text.strip()
-                                        # print("Size =", size )
-                                if unitcount == '':
-                                    if infohead.text.strip() == "Unit Count":
-                                        unitcount = infodata.text.strip()
-                                        # print("Unit Count =", unitcount)
-                                if biketype == '':
-                                    if infohead.text.strip() == "Bike Type":
-                                        biketype = infodata.text.strip()
-                                        # print("Bike Type1 =", biketype)
-                                if agerange == '':
-                                    if infohead.text.strip() == "Age Range (Description)":
-                                        agerange = infodata.text.strip()
-                                        # print("Age Range =", agerange )
-                                if wheelsize == '':
-                                    if infohead.text.strip() == "Wheel Size":
-                                        wheelsize = infodata.text.strip()
-                                        # print("Wheel Size =", wheelsize)
-                                if shape == '':
-                                    if infohead.text.strip() == "Shape":
-                                        shape = infodata.text.strip()
-                                        # print("Shape =", shape)
-                                if pattern == '':
-                                    if infohead.text.strip() == "Pattern":
-                                        pattern = infodata.text.strip()
-                                        # print("Pattern =", pattern)
-                                if capacity == '':
-                                    if infohead.text.strip() == "Capacity":
-                                        capacity = infodata.text.strip()
-                                        # print("Capacity =", capacity)
-                                if fillmat == '':
-                                    if infohead.text.strip() == "Fill Material":
-                                        fillmat = infodata.text.strip()
-                                        # print("Fill Material =", fillmat)
-                                if pillowtype == '':
-                                    if infohead.text.strip() == "Pillow Type":
-                                        pillowtype = infodata.text.strip()
-                                        # print("Pillow Type =", pillowtype)
-                                if finishtype == '':
-                                    if infohead.text.strip() == "Finish Type":
-                                        finishtype = infodata.text.strip()
-                                        # print("Finish Type =", finishtype)
-                                if formfact == '':
-                                    if infohead.text.strip() == "Form Factor":
-                                        formfact = infodata.text.strip()
-                                        # print("Form Factor =", formfact)
-                                if inoutusage == '':
-                                    if infohead.text.strip() == "Indoor/Outdoor Usage":
-                                        inoutusage = infodata.text.strip()
-                                        # print("Indoor/Outdoor Usage =", inoutusage)
-                                if powersource == '':
-                                    if infohead.text.strip() == "Power Source":
-                                        powersource = infodata.text.strip()
-                                        # print("Power Source =", powersource)
-                                if heatingmethod == '':
-                                    if infohead.text.strip() == "Heating Method":
-                                        heatingmethod = infodata.text.strip()
-                                        # print("Heating Method =", heatingmethod)
-                                if recomuseforpro == '':
-                                    if infohead.text.strip() == "Recommended Uses For Product":
-                                        recomuseforpro = infodata.text.strip()
-                                        # print("Recommended Uses For Product =", recomuseforpro)
-                                if modelnumber == '':
-                                    if infohead.text.strip() == "Item model number":
-                                        modelnumber = infodata.text.strip()
-                                        # print("Item model number =", modelnumber)
-                                if genre == '':
-                                    if infohead.text.strip() == "Genre":
-                                        genre = infodata.text.strip()
-                                        #print("Genre=",genre)
-                                if contributor == '':
-                                    if infohead.text.strip() == "Contributor":
-                                        contributor = infodata.text.strip()
-                                        #print("Contributor=",contributor)
-                                if duration == '':
-                                    if infohead.text.strip() == "Runtime":
-                                        duration = infodata.text.strip()
-                                        #print("Runtime=",duration)
-                                if language == '':
-                                    if infohead.text.strip() == "Language":
-                                        language = infodata.text.strip()
-                                        #print("Language=",language)
-                                if numberofdisc == '':
-                                    if infohead.text.strip() == "Number Of Discs":
-                                        numberofdisc = infodata.text.strip()
-                                        #print("Number Of Discs=",numberofdisc)
-                                if instrumentkey == '':
-                                    if infohead.text.strip() == "Instrument Key":
-                                        instrumentkey = infodata.text.strip()
-                                        #print("Instrument Key=",instrumentkey)  
-                                #Auto Tires
-                                if rimsize == '':
-                                    if infohead.text.strip() == "Rim Size":
-                                        rimsize = infodata.text.strip()
-                                        #print("Rim Size= ",rimsize)
-                                if secwidth == '':
-                                    if infohead.text.strip() == "Section Width":
-                                        secwidth = infodata.text.strip()
-                                        #print("Section Width= ",secwidth)
-                                if tireaspectratio == '':
-                                    if infohead.text.strip() == "Tire Aspect Ratio":
-                                        tireaspectratio = infodata.text.strip()
-                                        #print("Tire Aspect Ratio=",tireaspectratio)
-                                if loadindexrating == '':
-                                    if infohead.text.strip() == "Load Index Rating":
-                                        loadindexrating = infodata.text.strip()
-                                        #print("Load Index Rating =",loadindexrating)
-                                if speedrating == '':
-                                    if infohead.text.strip() == "Speed Rating":
-                                        speedrating = infodata.text.strip()
-                                        #print("Speed Rating =",speedrating)
-                                if loadcapacity == '':
-                                    if infohead.text.strip() == "Load Capacity":
-                                        loadcapacity = infodata.text.strip()
-                                        #print("Load Capacity =",loadcapacity)
-                                if treaddepth == '':
-                                    if infohead.text.strip() == "Tread Depth":
-                                        treaddepth = infodata.text.strip()
-                                        #print("Tread Depth =",treaddepth)
-                                if treadtype == '':
-                                    if infohead.text.strip() == "Tread Type":
-                                        treadtype = infodata.text.strip()
-                                        #print("Tread Type =",treaddepth)
-                                if rimwidth == '':
-                                    if infohead.text.strip() == "Rim Width":
-                                        rimwidth = infodata.text.strip()
-                                        #print("Rim Width =",rimwidth)
-                                if tirediameter == '':
-                                    if infohead.text.strip() == "Tire Diameter":
-                                        tirediameter= infodata.text.strip()
-                                        #print("Tire Diameter =",tirediameter)
-                                if oempartno == '':
-                                    if infohead.text.strip() == "OEM Part Number":
-                                        oempartno= infodata.text.strip()
-                                        #print("OEM Part Number =",oempartno)
-                                if construction == '':
-                                    if infohead.text.strip() == "Construction":
-                                        construction = infodata.text.strip()
-                                        #print("Construction =",construction)
-                                if season == '':
-                                    if infohead.text.strip() == "Seasons":
-                                        season = infodata.text.strip()
-                                        #print("Seasons =",season)
-                                if loadrange == '':
-                                    if infohead.text.strip() == "Ply Rating":
-                                        loadrange = infodata.text.strip()
-                                #Videogames
+                            infohead = title[tagcount]
+                            infodata = value[tagcount]
+                            tagcount = tagcount + 1
+                            # print(infohead.text)
+                            if brand == '':
+                                if infohead.text.strip() == "Brand":
+                                    brand = infodata.text.strip()
+                                    # print("Brand1 =", brand)
+                            if pageinfo == '':
+                                if infohead.text.strip() == "Package Information" or infohead.text.strip() == "Package Dimensions":
+                                    paginfo = infodata.text.strip()
+                                    # print("Package Information =", paginfo)
+                            if color == '':
+                                if infohead.text.strip() == "Color" or infohead.text.strip() == "Ink Color":
+                                    color = infodata.text.strip()
+                                    # print("Color =",color)
+                            if itvolume == '':
+                                if infohead.text.strip() == "Item Volume":
+                                    itvolume = infodata.text.strip()
+                                    # print("Item Volume =", itvolume )
+                            if material == '':
+                                if infohead.text.strip() == "Material":
+                                    material = infodata.text.strip()
+                                    # print("Material =", material )
+                            if size == '':
+                                if infohead.text.strip() == "Size":
+                                    size = infodata.text.strip()
+                                    # print("Size =", size )
+                            if unitcount == '':
+                                if infohead.text.strip() == "Unit Count":
+                                    unitcount = infodata.text.strip()
+                                    # print("Unit Count =", unitcount)
+                            if biketype == '':
+                                if infohead.text.strip() == "Bike Type":
+                                    biketype = infodata.text.strip()
+                                    # print("Bike Type1 =", biketype)
+                            if agerange == '':
+                                if infohead.text.strip() == "Age Range (Description)":
+                                    agerange = infodata.text.strip()
+                                    # print("Age Range =", agerange )
+                            if wheelsize == '':
+                                if infohead.text.strip() == "Wheel Size":
+                                    wheelsize = infodata.text.strip()
+                                    # print("Wheel Size =", wheelsize)
+                            if shape == '':
+                                if infohead.text.strip() == "Shape":
+                                    shape = infodata.text.strip()
+                                    # print("Shape =", shape)
+                            if pattern == '':
+                                if infohead.text.strip() == "Pattern":
+                                    pattern = infodata.text.strip()
+                                    # print("Pattern =", pattern)
+                            if capacity == '':
+                                if infohead.text.strip() == "Capacity":
+                                    capacity = infodata.text.strip()
+                                    # print("Capacity =", capacity)
+                            if fillmat == '':
+                                if infohead.text.strip() == "Fill Material":
+                                    fillmat = infodata.text.strip()
+                                    # print("Fill Material =", fillmat)
+                            if pillowtype == '':
+                                if infohead.text.strip() == "Pillow Type":
+                                    pillowtype = infodata.text.strip()
+                                    # print("Pillow Type =", pillowtype)
+                            if finishtype == '':
+                                if infohead.text.strip() == "Finish Type":
+                                    finishtype = infodata.text.strip()
+                                    # print("Finish Type =", finishtype)
+                            if formfact == '':
+                                if infohead.text.strip() == "Form Factor":
+                                    formfact = infodata.text.strip()
+                                    # print("Form Factor =", formfact)
+                            if inoutusage == '':
+                                if infohead.text.strip() == "Indoor/Outdoor Usage":
+                                    inoutusage = infodata.text.strip()
+                                    # print("Indoor/Outdoor Usage =", inoutusage)
+                            if powersource == '':
+                                if infohead.text.strip() == "Power Source":
+                                    powersource = infodata.text.strip()
+                                    # print("Power Source =", powersource)
+                            if heatingmethod == '':
+                                if infohead.text.strip() == "Heating Method":
+                                    heatingmethod = infodata.text.strip()
+                                    # print("Heating Method =", heatingmethod)
+                            if recomuseforpro == '':
+                                if infohead.text.strip() == "Recommended Uses For Product":
+                                    recomuseforpro = infodata.text.strip()
+                                    # print("Recommended Uses For Product =", recomuseforpro)
+                            if modelnumber == '':
+                                if infohead.text.strip() == "Item model number":
+                                    modelnumber = infodata.text.strip()
+                                    # print("Item model number =", modelnumber)
+                            if genre == '':
+                                if infohead.text.strip() == "Genre":
+                                    genre = infodata.text.strip()
+                                    # print("Genre=",genre)
+                            if contributor == '':
+                                if infohead.text.strip() == "Contributor":
+                                    contributor = infodata.text.strip()
+                                    # print("Contributor=",contributor)
+                            if duration == '':
+                                if infohead.text.strip() == "Runtime":
+                                    duration = infodata.text.strip()
+                                    # print("Runtime=",duration)
+                            if language == '':
+                                if infohead.text.strip() == "Language":
+                                    language = infodata.text.strip()
+                                    # print("Language=",language)
+                            if numberofdisc == '':
+                                if infohead.text.strip() == "Number Of Discs":
+                                    numberofdisc = infodata.text.strip()
+                                    # print("Number Of Discs=",numberofdisc)
+                            if instrumentkey == '':
+                                if infohead.text.strip() == "Instrument Key":
+                                    instrumentkey = infodata.text.strip()
+                                    # print("Instrument Key=",instrumentkey)
+                            # Auto Tires
+                            if rimsize == '':
+                                if infohead.text.strip() == "Rim Size":
+                                    rimsize = infodata.text.strip()
+                                    # print("Rim Size= ",rimsize)
+                            if secwidth == '':
+                                if infohead.text.strip() == "Section Width":
+                                    secwidth = infodata.text.strip()
+                                    # print("Section Width= ",secwidth)
+                            if tireaspectratio == '':
+                                if infohead.text.strip() == "Tire Aspect Ratio":
+                                    tireaspectratio = infodata.text.strip()
+                                    # print("Tire Aspect Ratio=",tireaspectratio)
+                            if loadindexrating == '':
+                                if infohead.text.strip() == "Load Index Rating":
+                                    loadindexrating = infodata.text.strip()
+                                    # print("Load Index Rating =",loadindexrating)
+                            if speedrating == '':
+                                if infohead.text.strip() == "Speed Rating":
+                                    speedrating = infodata.text.strip()
+                                    # print("Speed Rating =",speedrating)
+                            if loadcapacity == '':
+                                if infohead.text.strip() == "Load Capacity":
+                                    loadcapacity = infodata.text.strip()
+                                    # print("Load Capacity =",loadcapacity)
+                            if treaddepth == '':
+                                if infohead.text.strip() == "Tread Depth":
+                                    treaddepth = infodata.text.strip()
+                                    # print("Tread Depth =",treaddepth)
+                            if treadtype == '':
+                                if infohead.text.strip() == "Tread Type":
+                                    treadtype = infodata.text.strip()
+                                    # print("Tread Type =",treaddepth)
+                            if rimwidth == '':
+                                if infohead.text.strip() == "Rim Width":
+                                    rimwidth = infodata.text.strip()
+                                    # print("Rim Width =",rimwidth)
+                            if tirediameter == '':
+                                if infohead.text.strip() == "Tire Diameter":
+                                    tirediameter = infodata.text.strip()
+                                    # print("Tire Diameter =",tirediameter)
+                            if oempartno == '':
+                                if infohead.text.strip() == "OEM Part Number":
+                                    oempartno = infodata.text.strip()
+                                    # print("OEM Part Number =",oempartno)
+                            if construction == '':
+                                if infohead.text.strip() == "Construction":
+                                    construction = infodata.text.strip()
+                                    # print("Construction =",construction)
+                            if season == '':
+                                if infohead.text.strip() == "Seasons":
+                                    season = infodata.text.strip()
+                                    # print("Seasons =",season)
+                            if loadrange == '':
+                                if infohead.text.strip() == "Ply Rating":
+                                    loadrange = infodata.text.strip()
+                            # Videogames
 
-                                if hardwareinterface == '':
-                                    if infohead.text.strip() == "Hardware Interface":
-                                        hardwareinterface = infodata.text.strip()
-                                if compatibledevices == '':
-                                    if infohead.text.strip() == "Compatible Devices":
-                                        compatibledevices = infodata.text.strip()
-                                if totalusbport == '':
-                                    if infohead.text.strip() == "Total USB Ports":
-                                        totalusbport = infodata.text.strip()
-                                if noofports == '':
-                                    if infohead.text.strip() == "Number of Ports":
-                                        noofports = infodata.text.strip()
-                                if totalhdmiports == '':
-                                    if infohead.text.strip() == "Total HDMI Ports":
-                                        totalhdmiports = infodata.text.strip()
-                                if itemw == '':
-                                    if infohead.text.strip() == "Item Weight":
-                                        itemw = infodata.text.strip()
-                                if connectortype == '':
-                                    if infohead.text.strip() == "Connector Type":
-                                        connectortype = infodata.text.strip()
-                                if cabletype == '':
-                                    if infohead.text.strip() == "Cable Type":
-                                        cabletype = infodata.text.strip()
-                                if specialfeature == '':
-                                    if infohead.text.strip() == "Special Feature":
-                                        specialfeature = infodata.text.strip()
-                                if modelname == '':
-                                    if infohead.text.strip() == "Model Name":
-                                        modelname = infodata.text.strip()
-                                if hardwareplatform == '':
-                                    if infohead.text.strip() == "Hardware Platform":
-                                        hardwareplatform = infodata.text.strip()
-                                if ops == '':
-                                    if infohead.text.strip() == "Operating System":
-                                        ops = infodata.text.strip()
+                            if hardwareinterface == '':
+                                if infohead.text.strip() == "Hardware Interface":
+                                    hardwareinterface = infodata.text.strip()
+                            if compatibledevices == '':
+                                if infohead.text.strip() == "Compatible Devices":
+                                    compatibledevices = infodata.text.strip()
+                            if totalusbport == '':
+                                if infohead.text.strip() == "Total USB Ports":
+                                    totalusbport = infodata.text.strip()
+                            if noofports == '':
+                                if infohead.text.strip() == "Number of Ports":
+                                    noofports = infodata.text.strip()
+                            if totalhdmiports == '':
+                                if infohead.text.strip() == "Total HDMI Ports":
+                                    totalhdmiports = infodata.text.strip()
+                            if itemw == '':
+                                if infohead.text.strip() == "Item Weight":
+                                    itemw = infodata.text.strip()
+                            if connectortype == '':
+                                if infohead.text.strip() == "Connector Type":
+                                    connectortype = infodata.text.strip()
+                            if cabletype == '':
+                                if infohead.text.strip() == "Cable Type":
+                                    cabletype = infodata.text.strip()
+                            if specialfeature == '':
+                                if infohead.text.strip() == "Special Feature":
+                                    specialfeature = infodata.text.strip()
+                            if modelname == '':
+                                if infohead.text.strip() == "Model Name":
+                                    modelname = infodata.text.strip()
+                            if hardwareplatform == '':
+                                if infohead.text.strip() == "Hardware Platform":
+                                    hardwareplatform = infodata.text.strip()
+                            if ops == '':
+                                if infohead.text.strip() == "Operating System":
+                                    ops = infodata.text.strip()
         except:
             pass
 
@@ -2261,19 +2297,18 @@ def AttributeExtraction(lines):
                             if setting == '':
                                 if infohead.text.strip() == "Setting":
                                     setting = infodata.text.strip()
-                                    #print("Setting =", setting)
+                                    # print("Setting =", setting)
                             if width == '':
                                 if infohead.text.strip() == "Width":
                                     width = infodata.text.strip()
-                                   
+
                             if numberofstones == '':
                                 if infohead.text.strip() == "Number of stones":
                                     numberofstones = infodata.text.strip()
-                               
+
                             if stoneweight == '':
                                 if infohead.text.strip() == "Stone Weight":
                                     stoneweight = infodata.text.strip()
-                                   
 
         # specification for items
         tagcount = 0
@@ -2383,30 +2418,30 @@ def AttributeExtraction(lines):
                                 if infohead.text.strip() == "Item model number":
                                     modelnumber = infodata.text.strip()
                                     # print("Item model number =", modelnumber)
-                            #Auto & Tires
+                            # Auto & Tires
                             if loadrange == '':
                                 if infodata.text.strip() == "Ply Rating":
                                     loadrange = infodata.text.strip()
 
-        #title below format
+        # title below format
         tifor = soup.find_all("div", class_="a-section a-spacing-micro bylineHidden feature")
         if tifor != None:
             for i in tifor:
                 p = i.find_all("span", class_="a-color-secondary")
                 p1 = i.find_all("span")
                 if p != None or p1 != None:
-                  for j in p:
-                    p = j.text.replace('\u200f\n', '')
-                    p = p.replace('\u200e\n', '')
-                    p = p.replace('\n', '')
-                    p = p.replace(':', '')
-                    p = p.strip()
-                  for k in p1:
-                    p1 = k.text.strip()
-                  if p == "Format":
-                    tiformat = p1
-                    if tiformat == 'Dvd' or tiformat == 'Multi-Format' or tiformat == 'VHS Tape' or tiformat == 'HD DVD' or tiformat == 'DVD' or tiformat == 'CD' or tiformat == 'Blu-Ray' or tiformat == 'Blu-ray' or tiformat == '4K Ultra HD' or tiformat == '4K Ultra HD':
-                        titleformats = tiformat
+                    for j in p:
+                        p = j.text.replace('\u200f\n', '')
+                        p = p.replace('\u200e\n', '')
+                        p = p.replace('\n', '')
+                        p = p.replace(':', '')
+                        p = p.strip()
+                    for k in p1:
+                        p1 = k.text.strip()
+                    if p == "Format":
+                        tiformat = p1
+                        if tiformat == 'Dvd' or tiformat == 'Multi-Format' or tiformat == 'VHS Tape' or tiformat == 'HD DVD' or tiformat == 'DVD' or tiformat == 'CD' or tiformat == 'Blu-Ray' or tiformat == 'Blu-ray' or tiformat == '4K Ultra HD' or tiformat == '4K Ultra HD':
+                            titleformats = tiformat
 
         # Buybox price
         try:
@@ -2586,7 +2621,8 @@ def AttributeExtraction(lines):
             highlited1 = highlited.find("ul", class_="a-unordered-list a-nostyle a-button-list a-horizontal")
 
             if highlited is None:
-                highlited = soup.find("ul",class_="a-unordered-list a-nostyle a-button-list a-declarative a-button-toggle-group a-horizontal a-spacing-top-micro swatches swatchesSquare imageSwatches")
+                highlited = soup.find("ul",
+                                      class_="a-unordered-list a-nostyle a-button-list a-declarative a-button-toggle-group a-horizontal a-spacing-top-micro swatches swatchesSquare imageSwatches")
 
                 high = highlited.find("li", class_="swatchSelect")
                 highformat = high.find_all("a", class_="a-button-text")
@@ -2615,8 +2651,8 @@ def AttributeExtraction(lines):
 
         except AttributeError:
             pass
-        
-        #Swatch Details unselected
+
+        # Swatch Details unselected
         try:
             unhighlited = soup.find("li", class_="swatchElement unselected")
             unhighlited = unhighlited.find_all("a", class_="a-button-text")
@@ -2703,48 +2739,50 @@ def AttributeExtraction(lines):
 
         except AttributeError:
             pass
-        
-        #Customer Review
+
+        # Customer Review
         try:
-            review = soup.find("div", attrs={"id":"averageCustomerReviews"})
-            review = review.find("span", class_="a-icon-alt").text.replace(" out of 5 stars","")
-            
+            review = soup.find("div", attrs={"id": "averageCustomerReviews"})
+            review = review.find("span", class_="a-icon-alt").text.replace(" out of 5 stars", "")
+
         except AttributeError:
             pass
-        
-        #Sold And Shipped
+
+        # Sold And Shipped
         try:
-            p = soup.find("div", attrs={"tabular-attribute-name":"Ships from"}).text.strip()
-            p1 = soup.find_all("div", attrs={"tabular-attribute-name":"Ships from"})
-             
+            p = soup.find("div", attrs={"tabular-attribute-name": "Ships from"}).text.strip()
+            p1 = soup.find_all("div", attrs={"tabular-attribute-name": "Ships from"})
+
             for j in p1:
                 if p == "Ships from":
-                 if j.text.strip() != "Ships from":
-                    ship = j.text.strip()
+                    if j.text.strip() != "Ships from":
+                        ship = j.text.strip()
 
-            p2 = soup.find("div", attrs={"tabular-attribute-name":"Sold by"}).text.strip()
-            p3 = soup.find_all("div", attrs={"tabular-attribute-name":"Sold by"})
-             
+            p2 = soup.find("div", attrs={"tabular-attribute-name": "Sold by"}).text.strip()
+            p3 = soup.find_all("div", attrs={"tabular-attribute-name": "Sold by"})
+
             for j in p3:
                 if p2 == "Sold by":
-                 if j.text.strip() != "Sold by":
-                    sold = j.text.strip()
+                    if j.text.strip() != "Sold by":
+                        sold = j.text.strip()
         except AttributeError:
             pass
 
-
-        breadcrumbsplit = breadcrumb.replace("›", "/").replace("\n", "").replace("                         ",                                                                                 "").strip()
+        breadcrumbsplit = breadcrumb.replace("›", "/").replace("\n", "").replace("                         ",
+                                                                                 "").strip()
         breadcrumbsplit = list(breadcrumbsplit.split("/"))
         if breadcrumbsplit[0] == "Books":
-            titleISBN13,titleISBN10,prodetailISBN13,prodetailISBN10,titleformat = book(soup)
+            titleISBN13, titleISBN10, prodetailISBN13, prodetailISBN10, titleformat = book(soup)
         elif breadcrumbsplit[0] == "Movies & TV":
             titleformat = movies(soup)
-        elif 'Automotive' in breadcrumbsplit and ('Tires & Accessories' in breadcrumbsplit or 'Tires' in breadcrumbsplit):
+        elif 'Automotive' in breadcrumbsplit and (
+                'Tires & Accessories' in breadcrumbsplit or 'Tires' in breadcrumbsplit):
             if size != None:
                 size = re.sub('\D', '', size)
-            titletiresize,aboutloadrange,swatchtiresize,swatchloadindexrating,swatchspeedrating,swatchhightiresize,titleloadrange = autotires(soup,size)
+            titletiresize, aboutloadrange, swatchtiresize, swatchloadindexrating, swatchspeedrating, swatchhightiresize, titleloadrange = autotires(
+                soup, size)
         elif breadcrumbsplit[0] == "Video Games" and 'Accessories' not in breadcrumb:
-            platform,swatchplatform,titleplatform,prodetplatformlist = videogames(soup)
+            platform, swatchplatform, titleplatform, prodetplatformlist = videogames(soup)
         elif breadcrumbsplit[0] == "Clothing" or 'Clothing' in breadcrumbsplit[0]:
             titlecolorlist, titleclothingsizelist, prodetailclothingsize, prodetailcolor = clothing(soup)
         else:
@@ -2763,7 +2801,7 @@ def AttributeExtraction(lines):
         swatchspeedrating = swatchspeedrating
         swatchhightiresize = swatchhightiresize
         titleloadrange = titleloadrange
-        
+
         titlecolorlist = titlecolorlist
         titleclothingsizelist = titleclothingsizelist
         prodetailclothingsize = prodetailclothingsize
@@ -2775,40 +2813,40 @@ def AttributeExtraction(lines):
         prodetplatformlist = prodetplatformlist
 
         mediaformatlist = mediaformat.split(",")
-        
+
         for i in mediaformatlist:
-                i = i.replace("Multiple Formats","Multi-Format").strip()
-                if  i == iformat and i == titleformat:
+            i = i.replace("Multiple Formats", "Multi-Format").strip()
+            if i == iformat and i == titleformat:
+                mediaformat = i
+            if i == iformat and i == titleformats:
+                mediaformat = i
+            if i == iformat and i == highformat:
+                mediaformat = i
+            if i == titleformat and i == titleformats:
+                mediaformat = i
+            if i == titleformat and i == highformat:
+                mediaformat = i
+            if i == titleformats and i == highformat:
+                mediaformat = i
+            elif titleformat != '' or iformat != '' or titleformats != '' or highformat != '':
+                if i == titleformat:
                     mediaformat = i
-                if  i == iformat and i == titleformats:
+                elif i == iformat:
                     mediaformat = i
-                if  i == iformat and i == highformat:
+                elif i == titleformats:
                     mediaformat = i
-                if i == titleformat and i == titleformats:
+                elif i == highformat:
                     mediaformat = i
-                if i == titleformat and i == highformat:
-                    mediaformat = i
-                if i == titleformats and i == highformat:
-                    mediaformat = i
-                elif titleformat != '' or iformat != '' or titleformats != '' or highformat != '':
-                    if i == titleformat:
-                        mediaformat = i
-                    elif i == iformat:
-                        mediaformat = i
-                    elif i == titleformats:
-                        mediaformat = i
-                    elif i == highformat:
-                        mediaformat = i
 
         if mediaformat == 'Dvd' or mediaformat == 'VHS Tape' or mediaformat == "Multiple-Format" or mediaformat == "HD DVD" or mediaformat == 'DVD' or mediaformat == 'CD' or mediaformat == 'Blu-Ray' or mediaformat == 'Blu-ray' or mediaformat == '4K Ultra HD' or mediaformat == '4K Ultra HD':
-                mediaformat = mediaformat
+            mediaformat = mediaformat
         else:
             mediaformat = ""
 
         if ',' in platform:
-            platform = platform.split(",") 
+            platform = platform.split(",")
             for i in platform:
-                i = i.lower().replace("vista","").strip()
+                i = i.lower().replace("vista", "").strip()
                 if titleplatform != '':
                     if i.strip() == titleplatform:
                         platform = i
@@ -2816,36 +2854,36 @@ def AttributeExtraction(lines):
                         platform = 'pc'
                 else:
                     platform = platform
-                    
-        if titleplatform != '' and platform != '' and (titleplatform == 'ps4' or titleplatform == 'playstation 4' or titleplatform == 'ps5' or titleplatform == 'playstation 5'):
-                if platform.lower().strip() == 'playstation 4' and titleplatform == 'ps4':
-                    platform = 'ps4'
-                elif platform.lower().strip() =='ps4' and titleplatform == 'playstation 4':
-                    platform = 'playstation 4'
-                elif platform.lower().strip() == 'playstation 5' and titleplatform == 'ps5':
-                    platform = 'ps5'
-                elif platform.lower().strip() =='ps5' and titleplatform == 'playstation 5':
-                    platform = 'playstation 5'
-    
-        
+
+        if titleplatform != '' and platform != '' and (
+                titleplatform == 'ps4' or titleplatform == 'playstation 4' or titleplatform == 'ps5' or titleplatform == 'playstation 5'):
+            if platform.lower().strip() == 'playstation 4' and titleplatform == 'ps4':
+                platform = 'ps4'
+            elif platform.lower().strip() == 'ps4' and titleplatform == 'playstation 4':
+                platform = 'playstation 4'
+            elif platform.lower().strip() == 'playstation 5' and titleplatform == 'ps5':
+                platform = 'ps5'
+            elif platform.lower().strip() == 'ps5' and titleplatform == 'playstation 5':
+                platform = 'playstation 5'
+
         if platform != '' or titleplatform != '' or swatchplatform:
-                for i in prodetplatformlist:
-                    if  i == platform.lower() and i == titleplatform.lower():
-                        prodetplatform = i
-                    elif  i == platform.lower() and i == swatchplatform.lower():
-                        prodetplatform = i
-                    elif  i == titleplatform.lower() and i == swatchplatform.lower():
-                        prodetplatform = i
-                    elif i == platform.lower():
-                        prodetplatform = i
-                    elif i == titleplatform.lower():
-                        prodetplatform = i
-                    elif i == swatchplatform.lower():
-                        prodetplatform = i
+            for i in prodetplatformlist:
+                if i == platform.lower() and i == titleplatform.lower():
+                    prodetplatform = i
+                elif i == platform.lower() and i == swatchplatform.lower():
+                    prodetplatform = i
+                elif i == titleplatform.lower() and i == swatchplatform.lower():
+                    prodetplatform = i
+                elif i == platform.lower():
+                    prodetplatform = i
+                elif i == titleplatform.lower():
+                    prodetplatform = i
+                elif i == swatchplatform.lower():
+                    prodetplatform = i
         else:
             for i in prodetplatformlist:
                 prodetplatform = i
-        
+
         matchtype = matchtype
         matchtypecomments = matchtypecomments
 
@@ -2871,18 +2909,19 @@ def AttributeExtraction(lines):
     imageurl = str(imageurl)
     aboutitem = str(aboutitem)
     productoverview = str(productoverview)
-    
-    return pgproblem,itemid, breadcrumb, brandtitle,titlecard, listprice, my_list, bp, sp, titleformat, brand, gender, color, iformat, manuf, partno, model, pack, shape, titleISBN13, titleISBN10, prodetailISBN13, prodetailISBN10, dimen, size, asin, itemw, biketype, agerange,wheelsize, pattern, material, unitcount, publisher, language, pagecount, isbn, isbn1, numberofitems, batteries, fdate, countryo,covermat, style, fillmat, pillowtype, specialfeature, procar, season, fabrictype, itemthickness,finishtype, formfact, inoutusage, powersource, heatingmethod, recomuseforpro, modelnumber, disman,itvolume, metalstamp, metal, gemtype, totalgemweight, swatch, highformat, highprice, aboutitem,productoverview, productdetails, productinfo, imageurl, screenshot_path, setting , width , numberofstones , stoneweight , mpaarating , director , duration , releasedate , actors , studio , numberofdisc , genre , contributor , audiodesc , dubbed , subtitles , producers , aspectratio , mediaformat , bodymaterial , materialtype , instrumentkey , label ,titleformats, rimsize,secwidth,tireaspectratio,loadindexrating,speedrating,loadcapacity,treaddepth,treadtype,rimwidth,tirediameter,oempartno,construction,loadrange,titletiresize,swatchtiresize,swatchhightiresize,titleloadrange,aboutloadrange,swatchspeedrating,swatchloadindexrating, review, ship, sold, hardwareinterface,compatibledevices,totalusbport,noofports,totalhdmiports,connectortype,cabletype,modelname,hardwareplatform,ops,pricing,typeofitem,titleplatform,platform,swatchplatform,prodetplatform
+
+    return pgproblem, itemid, breadcrumb, brandtitle, titlecard, listprice, my_list, bp, sp, titleformat, brand, gender, color, iformat, manuf, partno, model, pack, shape, titleISBN13, titleISBN10, prodetailISBN13, prodetailISBN10, dimen, size, asin, itemw, biketype, agerange, wheelsize, pattern, material, unitcount, publisher, language, pagecount, isbn, isbn1, numberofitems, batteries, fdate, countryo, covermat, style, fillmat, pillowtype, specialfeature, procar, season, fabrictype, itemthickness, finishtype, formfact, inoutusage, powersource, heatingmethod, recomuseforpro, modelnumber, disman, itvolume, metalstamp, metal, gemtype, totalgemweight, swatch, highformat, highprice, aboutitem, productoverview, productdetails, productinfo, imageurl, screenshot_path, setting, width, numberofstones, stoneweight, mpaarating, director, duration, releasedate, actors, studio, numberofdisc, genre, contributor, audiodesc, dubbed, subtitles, producers, aspectratio, mediaformat, bodymaterial, materialtype, instrumentkey, label, titleformats, rimsize, secwidth, tireaspectratio, loadindexrating, speedrating, loadcapacity, treaddepth, treadtype, rimwidth, tirediameter, oempartno, construction, loadrange, titletiresize, swatchtiresize, swatchhightiresize, titleloadrange, aboutloadrange, swatchspeedrating, swatchloadindexrating, review, ship, sold, hardwareinterface, compatibledevices, totalusbport, noofports, totalhdmiports, connectortype, cabletype, modelname, hardwareplatform, ops, pricing, typeofitem, titleplatform, platform, swatchplatform, prodetplatform
 
     os.system('cls')
 
+
 relen = reccount()
 
-
 if relen != 0:
-    connection,cursor = urlquery()
+    connection, cursor = urlquery()
     for url_lines in cursor.fetchall():
-        pgproblem,itemid, breadcrumb, brandtitle,titlecard, listprice, my_list, bp, sp, titleformat, brand, gender, color, iformat, manuf, partno, model, pack, shape, titleISBN13, titleISBN10, prodetailISBN13, prodetailISBN10, dimen, size, asin, itemw, biketype, agerange,wheelsize, pattern, material, unitcount, publisher, language, pagecount, isbn, isbn1, numberofitems, batteries, fdate, countryo,covermat, style, fillmat, pillowtype, specialfeature, procar, season, fabrictype, itemthickness,finishtype, formfact, inoutusage, powersource, heatingmethod, recomuseforpro, modelnumber, disman,itvolume, metalstamp, metal, gemtype, totalgemweight, swatch, highformat, highprice, aboutitem,productoverview, productdetails, productinfo, imageurl, screenshot_path,setting , width , numberofstones , stoneweight , mpaarating , director , duration , releasedate , actors , studio , numberofdisc , genre , contributor , audiodesc , dubbed , subtitles , producers , aspectratio , mediaformat , bodymaterial , materialtype , instrumentkey , label ,titleformats, rimsize,secwidth,tireaspectratio,loadindexrating,speedrating,loadcapacity,treaddepth,treadtype,rimwidth,tirediameter,oempartno,construction,loadrange,titletiresize,swatchtiresize,swatchhightiresize,titleloadrange,aboutloadrange,swatchspeedrating,swatchloadindexrating, review, ship, sold, hardwareinterface,compatibledevices,totalusbport,noofports,totalhdmiports,connectortype,cabletype,modelname,hardwareplatform,ops,pricing,typeofitem,titleplatform,platform,swatchplatform,prodetplatform = AttributeExtraction(url_lines)
+        pgproblem, itemid, breadcrumb, brandtitle, titlecard, listprice, my_list, bp, sp, titleformat, brand, gender, color, iformat, manuf, partno, model, pack, shape, titleISBN13, titleISBN10, prodetailISBN13, prodetailISBN10, dimen, size, asin, itemw, biketype, agerange, wheelsize, pattern, material, unitcount, publisher, language, pagecount, isbn, isbn1, numberofitems, batteries, fdate, countryo, covermat, style, fillmat, pillowtype, specialfeature, procar, season, fabrictype, itemthickness, finishtype, formfact, inoutusage, powersource, heatingmethod, recomuseforpro, modelnumber, disman, itvolume, metalstamp, metal, gemtype, totalgemweight, swatch, highformat, highprice, aboutitem, productoverview, productdetails, productinfo, imageurl, screenshot_path, setting, width, numberofstones, stoneweight, mpaarating, director, duration, releasedate, actors, studio, numberofdisc, genre, contributor, audiodesc, dubbed, subtitles, producers, aspectratio, mediaformat, bodymaterial, materialtype, instrumentkey, label, titleformats, rimsize, secwidth, tireaspectratio, loadindexrating, speedrating, loadcapacity, treaddepth, treadtype, rimwidth, tirediameter, oempartno, construction, loadrange, titletiresize, swatchtiresize, swatchhightiresize, titleloadrange, aboutloadrange, swatchspeedrating, swatchloadindexrating, review, ship, sold, hardwareinterface, compatibledevices, totalusbport, noofports, totalhdmiports, connectortype, cabletype, modelname, hardwareplatform, ops, pricing, typeofitem, titleplatform, platform, swatchplatform, prodetplatform = AttributeExtraction(
+            url_lines)
 
         azid = url_lines[1]
         tooldate = datetime.now().strftime("%Y-%m-%d")
@@ -2964,7 +3003,7 @@ if relen != 0:
         titleformat = titleformat
         setting = setting
         width = width
-        numberofstones = numberofstones 
+        numberofstones = numberofstones
         stoneweight = stoneweight
         mpaarating = mpaarating
         director = director
@@ -2982,8 +3021,8 @@ if relen != 0:
         aspectratio = aspectratio
         mediaformat = mediaformat
         bodymaterial = bodymaterial
-        materialtype = materialtype 
-        instrumentkey  = instrumentkey
+        materialtype = materialtype
+        instrumentkey = instrumentkey
         label = label
         titleformats = titleformats
         rimsize = rimsize
@@ -3025,30 +3064,38 @@ if relen != 0:
         platform = platform
         swatchplatform = swatchplatform
         prodetplatform = prodetplatform
-        
-        cursor.execute('INSERT INTO "ECHO_AE_AZ_Out" ("AZ_Record_ID","Tool_Date","Tool_Time","Batch_ID","AZ_URL","URL_Status","Item_ID","Breadcrumb","Brand_Title","Title","List_Price","Buybox_Price","BuyBox_Selected","Selected_Price","Title_Format","Brand","Gender","Color","Format","Manufacturer","Manufacturer_Part_Number","Model","Count_Per_Pack","Shape","Title_ISBN13","Title_ISBN10","Prodetail_ISBN13","Prodetail_ISBN10","Product_Dimensions","Size","Asin","Item_Weight","Bike_Type","Age_Range","Wheel_Size","Pattern","Material","Unit_Count","Publisher","Language","Pagecount","ISBN_10","ISBN_13","Number_of_Items","Batteries","Date_First_Available","Country_of_Origin","Cover_Material","Style","Fill_Material","Pillow_Type","Special_Feature","Product_Care_Instructions","Seasons","Fabric_Type","Item_Thickness","Finish_Type","Form_Factor","Indoor_Outdoor_Usage","Power_Source","Heating_Method","Recommended_Uses_For_Product","Item_model_number","Is_Discontinued_By_Manufacturer","Item_Volume","Metal_stamp","Metal","Gem_Type","Minimum_total_gem_weight","Swatch_Details","Swatch_Format","Swatch_Price","About_this_Item","Product_Overview","Product_Details","Product_Information","Image_URL","Screenshot_Path","Setting","Width","Number_of_Stones","Stone_Weight","MPAA_Rating","Director","Run_Time","Release_Date","Actors","Studio","Number_of_Discs","Genre","Contributor","Audio_Description","Dubbed","Subtitles","Producers","Aspect_Ratio","Media_Format","Body_Material","Material_Type","Instrument_Key","Label","Title_Formats","Rim_Size","Section_Width","Tire_Aspect_Ratio","Load_Index_Rating","Speed_Rating","Load_Capacity","Tread_Depth","Tread_Type","Rim_Width","Tire_Diameter","OEM_Part_Number","Construction","Ply_Rating","Title_Tire_Size","Swatch_Tire_Size","Swatch_High_Tire_Size","Title_Load_Range","About_Load_Range","Swatch_Speed_Rating","Swatch_Load_Index_Rating","Review","Ship","Sold","Hardware_Interface","Compatible_Devices","Total_USB_Ports","Number_of_Ports","Total_HDMI_Ports","Connector_Type","Cable_Type","Model_Name","Hardware_Platform","Operating_System","Pricing","Type_of_item","Title_Platform","Platform","Swatch_Platform","Prodet_Platform") VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);',
-                    (azid,tooldate, tooltime, batch_id, url, pgproblem,itemid, breadcrumb, brandtitle,
-                     titlecard, listprice,my_list, bp, sp, titleformat, brand, gender, color, iformat, manuf, partno, model, pack, shape,titleISBN13, titleISBN10, prodetailISBN13, prodetailISBN10, dimen, size, asin, itemw, biketype, agerange,
-                     wheelsize, pattern, material,unitcount, publisher, language, pagecount, isbn, isbn1, numberofitems, batteries, fdate, countryo,
-                              covermat, style, fillmat, pillowtype, specialfeature, procar, season, fabrictype, itemthickness,
-                              finishtype,formfact, inoutusage, powersource, heatingmethod, recomuseforpro, modelnumber, disman,
-                              itvolume, metalstamp, metal, gemtype, totalgemweight, swatch, highformat, highprice, aboutitem,
-                              productoverview, productdetails, productinfo, imageurl, screenshot_path,
-                            setting , width , numberofstones , stoneweight , mpaarating , director , duration , releasedate , actors , studio , 
-                            numberofdisc , genre , contributor , audiodesc , dubbed , subtitles , producers , aspectratio , 
-                            mediaformat , bodymaterial , materialtype , instrumentkey , label, titleformats,rimsize,secwidth,
-                            tireaspectratio,loadindexrating,speedrating,loadcapacity,treaddepth,treadtype,rimwidth,tirediameter,
-                            oempartno,construction,loadrange,titletiresize,swatchtiresize,swatchhightiresize,
-                            titleloadrange,aboutloadrange,swatchspeedrating,swatchloadindexrating,review,ship,sold,
-                            hardwareinterface,compatibledevices,totalusbport,noofports,totalhdmiports,connectortype,cabletype,
-                            modelname,hardwareplatform,ops,pricing,typeofitem,titleplatform,platform,swatchplatform,
-                            prodetplatform ))
+
+        cursor.execute(
+            'INSERT INTO "ECHO_AE_AZ_Out" ("AZ_Record_ID","Tool_Date","Tool_Time","Batch_ID","AZ_URL","URL_Status","Item_ID","Breadcrumb","Brand_Title","Title","List_Price","Buybox_Price","BuyBox_Selected","Selected_Price","Title_Format","Brand","Gender","Color","Format","Manufacturer","Manufacturer_Part_Number","Model","Count_Per_Pack","Shape","Title_ISBN13","Title_ISBN10","Prodetail_ISBN13","Prodetail_ISBN10","Product_Dimensions","Size","Asin","Item_Weight","Bike_Type","Age_Range","Wheel_Size","Pattern","Material","Unit_Count","Publisher","Language","Pagecount","ISBN_10","ISBN_13","Number_of_Items","Batteries","Date_First_Available","Country_of_Origin","Cover_Material","Style","Fill_Material","Pillow_Type","Special_Feature","Product_Care_Instructions","Seasons","Fabric_Type","Item_Thickness","Finish_Type","Form_Factor","Indoor_Outdoor_Usage","Power_Source","Heating_Method","Recommended_Uses_For_Product","Item_model_number","Is_Discontinued_By_Manufacturer","Item_Volume","Metal_stamp","Metal","Gem_Type","Minimum_total_gem_weight","Swatch_Details","Swatch_Format","Swatch_Price","About_this_Item","Product_Overview","Product_Details","Product_Information","Image_URL","Screenshot_Path","Setting","Width","Number_of_Stones","Stone_Weight","MPAA_Rating","Director","Run_Time","Release_Date","Actors","Studio","Number_of_Discs","Genre","Contributor","Audio_Description","Dubbed","Subtitles","Producers","Aspect_Ratio","Media_Format","Body_Material","Material_Type","Instrument_Key","Label","Title_Formats","Rim_Size","Section_Width","Tire_Aspect_Ratio","Load_Index_Rating","Speed_Rating","Load_Capacity","Tread_Depth","Tread_Type","Rim_Width","Tire_Diameter","OEM_Part_Number","Construction","Ply_Rating","Title_Tire_Size","Swatch_Tire_Size","Swatch_High_Tire_Size","Title_Load_Range","About_Load_Range","Swatch_Speed_Rating","Swatch_Load_Index_Rating","Review","Ship","Sold","Hardware_Interface","Compatible_Devices","Total_USB_Ports","Number_of_Ports","Total_HDMI_Ports","Connector_Type","Cable_Type","Model_Name","Hardware_Platform","Operating_System","Pricing","Type_of_item","Title_Platform","Platform","Swatch_Platform","Prodet_Platform") VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);',
+            (azid, tooldate, tooltime, batch_id, url, pgproblem, itemid, breadcrumb, brandtitle,
+             titlecard, listprice, my_list, bp, sp, titleformat, brand, gender, color, iformat, manuf, partno, model,
+             pack, shape, titleISBN13, titleISBN10, prodetailISBN13, prodetailISBN10, dimen, size, asin, itemw,
+             biketype, agerange,
+             wheelsize, pattern, material, unitcount, publisher, language, pagecount, isbn, isbn1, numberofitems,
+             batteries, fdate, countryo,
+             covermat, style, fillmat, pillowtype, specialfeature, procar, season, fabrictype, itemthickness,
+             finishtype, formfact, inoutusage, powersource, heatingmethod, recomuseforpro, modelnumber, disman,
+             itvolume, metalstamp, metal, gemtype, totalgemweight, swatch, highformat, highprice, aboutitem,
+             productoverview, productdetails, productinfo, imageurl, screenshot_path,
+             setting, width, numberofstones, stoneweight, mpaarating, director, duration, releasedate, actors, studio,
+             numberofdisc, genre, contributor, audiodesc, dubbed, subtitles, producers, aspectratio,
+             mediaformat, bodymaterial, materialtype, instrumentkey, label, titleformats, rimsize, secwidth,
+             tireaspectratio, loadindexrating, speedrating, loadcapacity, treaddepth, treadtype, rimwidth, tirediameter,
+             oempartno, construction, loadrange, titletiresize, swatchtiresize, swatchhightiresize,
+             titleloadrange, aboutloadrange, swatchspeedrating, swatchloadindexrating, review, ship, sold,
+             hardwareinterface, compatibledevices, totalusbport, noofports, totalhdmiports, connectortype, cabletype,
+             modelname, hardwareplatform, ops, pricing, typeofitem, titleplatform, platform, swatchplatform,
+             prodetplatform))
         cursor.commit()
-        itemid = "'"+itemid+"'"
-        cursor.execute('SELECT "Batch_ID","Item_ID" FROM "ECHO_AE_AZ_Out" WHERE ("Batch_ID" = {} and "Item_ID" = {})'.format(Batch,itemid))
+        itemid = "'" + itemid + "'"
+        cursor.execute(
+            'SELECT "Batch_ID","Item_ID" FROM "ECHO_AE_AZ_Out" WHERE ("Batch_ID" = {} and "Item_ID" = {})'.format(Batch,
+                                                                                                                  itemid))
         fetrecord = len(cursor.fetchall())
         if fetrecord != 0:
-            cursor.execute('UPDATE "ECHO_AE_AZ_In" SET "Record_Status" = (%s) WHERE "Batch_ID" = (%s) and "AZ_URL" = (%s);', ('Processed',Batch ,url_lines[2]))
+            cursor.execute(
+                'UPDATE "ECHO_AE_AZ_In" SET "Record_Status" = (%s) WHERE "Batch_ID" = (%s) and "AZ_URL" = (%s);',
+                ('Processed', Batch, url_lines[2]))
             connection.commit()
         tcount = tcount + 1
         print("Completed " + str(tcount) + " URLs out of " + str(relen))
@@ -3056,7 +3103,9 @@ if relen != 0:
 
 else:
     print("The Given range of URLs are Processed")
-connection,cursor = azcon()
-cursor.execute('select count(*) from "ECHO_AE_AZ_In" WHERE ("Batch_ID" = {} and ("Record_Status" != {} or "Record_Status" is NULL or "Record_Status" = {} ))'.format(Batch,rs1,rs2))
+connection, cursor = azcon()
+cursor.execute(
+    'select count(*) from "ECHO_AE_AZ_In" WHERE ("Batch_ID" = {} and ("Record_Status" != {} or "Record_Status" is NULL or "Record_Status" = {} ))'.format(
+        Batch, rs1, rs2))
 rows = cursor.fetchone()[0]
 print("Remaining " + str(rows) + " URLs")
