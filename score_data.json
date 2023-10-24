@@ -1,0 +1,157 @@
+[
+    {
+        "amazon_product_id": "B01HVBTNR6",
+        "walmart_product_id": "534200054",
+        "similarity_score": 0.031164924991789054
+    },
+    {
+        "amazon_product_id": "B01HVBTNR6",
+        "walmart_product_id": "534200054",
+        "similarity_score": 0.031164924991789054
+    },
+    {
+        "amazon_product_id": "B09BLTKRJH",
+        "walmart_product_id": "999541784",
+        "similarity_score": 0.23510844232804232
+    },
+    {
+        "amazon_product_id": "B099P34NZ2",
+        "walmart_product_id": "999237347",
+        "similarity_score": 0.13825799747926087
+    },
+    {
+        "amazon_product_id": "B01N0SS24N",
+        "walmart_product_id": "999072742",
+        "similarity_score": 0.0835809830645944
+    },
+    {
+        "amazon_product_id": "B092CVLMQM",
+        "walmart_product_id": "998907103",
+        "similarity_score": 0.15221745727400612
+    },
+    {
+        "amazon_product_id": "0486474259",
+        "walmart_product_id": "997560727",
+        "similarity_score": 0.16213856534700008
+    },
+    {
+        "amazon_product_id": "B0BG4BKG62",
+        "walmart_product_id": "995631538",
+        "similarity_score": 0.23365215568890954
+    },
+    {
+        "amazon_product_id": "B088D2T69R",
+        "walmart_product_id": "995160301",
+        "similarity_score": 0.10311302556598667
+    },
+    {
+        "amazon_product_id": "B0B1467KZG",
+        "walmart_product_id": "995130589",
+        "similarity_score": 0.08004915690805804
+    },
+    {
+        "amazon_product_id": "B009OXCRZ0",
+        "walmart_product_id": "995107701",
+        "similarity_score": 0.14947416395079716
+    },
+    {
+        "amazon_product_id": "B09873RKGF",
+        "walmart_product_id": "994944506",
+        "similarity_score": 0.18054020480555014
+    },
+    {
+        "amazon_product_id": "B00407TTPG",
+        "walmart_product_id": "994331679",
+        "similarity_score": 0.09890853865888509
+    },
+    {
+        "amazon_product_id": "B0C3GK39MX",
+        "walmart_product_id": "993589130",
+        "similarity_score": 0.0
+    },
+    {
+        "amazon_product_id": "B089748PT1",
+        "walmart_product_id": "993487154",
+        "similarity_score": 0.12752171820814615
+    },
+    {
+        "amazon_product_id": "B0BKDJ4KP6",
+        "walmart_product_id": "991573351",
+        "similarity_score": 0.15980377911142177
+    },
+    {
+        "amazon_product_id": "B073S36M4B",
+        "walmart_product_id": "991216057",
+        "similarity_score": 0.1204674659405106
+    },
+    {
+        "amazon_product_id": "B09W5X6W3F",
+        "walmart_product_id": "990772899",
+        "similarity_score": 0.14943304449402997
+    },
+    {
+        "amazon_product_id": "B07J6FTCL1",
+        "walmart_product_id": "990772462",
+        "similarity_score": 0.15254138742321086
+    },
+    {
+        "amazon_product_id": "B014WBYY2W",
+        "walmart_product_id": "990679630",
+        "similarity_score": 0.13147100373463186
+    },
+    {
+        "amazon_product_id": "B0BMWFCSR2",
+        "walmart_product_id": "990649765",
+        "similarity_score": 0.1625257107692615
+    },
+    {
+        "amazon_product_id": "B0C9XM5K7P",
+        "walmart_product_id": "989600979",
+        "similarity_score": 0.19544888189671902
+    },
+    {
+        "amazon_product_id": "B08L8CYX73",
+        "walmart_product_id": "988809045",
+        "similarity_score": 0.2351777332256747
+    },
+    {
+        "amazon_product_id": "B07X1WF8X2",
+        "walmart_product_id": "988045818",
+        "similarity_score": 0.17329970125362457
+    },
+    {
+        "amazon_product_id": "B00794WUTY",
+        "walmart_product_id": "987697210",
+        "similarity_score": 0.048624796940188175
+    },
+    {
+        "amazon_product_id": "B07RX6VM3B",
+        "walmart_product_id": "986933098",
+        "similarity_score": 0.0
+    },
+    {
+        "amazon_product_id": "B09MFDC8G4",
+        "walmart_product_id": "986369879",
+        "similarity_score": 0.16194267129395096
+    },
+    {
+        "amazon_product_id": "B0778F15T2",
+        "walmart_product_id": "985494044",
+        "similarity_score": 0.11272450763090518
+    },
+    {
+        "amazon_product_id": "B07BFGZCX2",
+        "walmart_product_id": "984387161",
+        "similarity_score": 0.19146045165356604
+    },
+    {
+        "amazon_product_id": "B093H18NYD",
+        "walmart_product_id": "982988213",
+        "similarity_score": 0.23726167371219611
+    },
+    {
+        "amazon_product_id": "B09J4QHL6M",
+        "walmart_product_id": "982907796",
+        "similarity_score": 0.0
+    }
+]

@@ -15,6 +15,7 @@ from datetime import datetime
 import ssl
 import psycopg2
 import pandas as pd
+import requests
 import json
 from lxml import etree
 import re
@@ -24,6 +25,11 @@ from test_data import amazon_url_list_404, walmart_url_list_404, walmart_url_lis
 from seleniumbase import Driver
 
 output_file_no_duplicates = "../output_files/output_file_no_duplicates.csv"
+
+custom_headers = {
+    "accept-language": "en-GB,en-US;q=0.9,en;q=0.8,kn;q=0.7",
+    "user-agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36",
+}
 
 
 def get_walmart_url_list():
@@ -36,22 +42,34 @@ def get_walmart_url_list():
 
 
 def get_walmart_soup(url: str, driver_type: str = 'uc') -> BeautifulSoup:
-    print(f"\n\nScraping Walmart URL: {url}")
-    if driver_type == 'uc':
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
-        options.add_argument('--no-sandbox')
-        driver = uc.Chrome(options=options, version_main=114, enable_cdp_events=True)
-    elif driver_type == 'sb':
-        driver = Driver(uc=True, headless=True)
-    else:
-        raise ValueError("Invalid driver type. Use 'undetected' or 'seleniumbase'.")
-
+    print(f"\nScraping Walmart URL: {url}")
+    if driver_type == 're':
+        try:
+            response = requests.get(url, headers=custom_headers)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.content, 'lxml')
+        except requests.RequestException as e:
+            print(f"Error scraping {url}: {e}")
+            soup = None
+        return soup
+    driver = None
     try:
+        if driver_type == 'uc':
+            options = webdriver.ChromeOptions()
+            options.add_argument('--headless')
+            options.add_argument('--no-sandbox')
+            driver = uc.Chrome(options=options, version_main=114, enable_cdp_events=True)
+        elif driver_type == 'sb':
+            driver = Driver(uc=True, headless=True)  # Assuming 'Driver' is from seleniumbase
+        else:
+            raise ValueError("Invalid driver type. Use 're', 'uc', or 'sb'.")
+
         driver.get(url)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
+
     finally:
-        driver.quit()
+        if driver:
+            driver.quit()
 
     return soup
 
@@ -59,7 +77,6 @@ def get_walmart_soup(url: str, driver_type: str = 'uc') -> BeautifulSoup:
 def check_walmart_url_status(soup: BeautifulSoup):
     title = soup.find("title")
     page_status = 0
-
     PROBLEMATIC_TITLES = {
         "Prints Builder | Walmart Photo",
         "Walmart.com | Save Money. Live Better",
@@ -125,7 +142,6 @@ def is_exclusive(soup: BeautifulSoup) -> bool:
 def format_short_description(description):
     if re.search(r'<[^>]+>', description):
         soup = BeautifulSoup(description, 'html.parser')
-
         list_items = soup.find_all('li')
         formatted_description = [item.get_text(strip=True) for item in list_items]
     else:
@@ -142,6 +158,7 @@ def extract_product_data(soup: BeautifulSoup, blob: dict, url) -> dict:
         formatted_description = format_short_description(raw_product_data.get('shortDescription'))
     else:
         formatted_description = []
+
     idml_data = blob.get("props", {}).get("pageProps", {}).get("initialData", {}).get("data", {}).get('idml', {})
     specification_blob = idml_data.get('specifications')
     if specification_blob:
@@ -149,6 +166,19 @@ def extract_product_data(soup: BeautifulSoup, blob: dict, url) -> dict:
                                     specification_blob]
     else:
         formatted_specifications = []
+
+    all_dangerous_html = soup.find_all("div", class_="dangerous-html mb3")
+    additional_info = []
+    for i in all_dangerous_html:
+        additional_info.append(i.text)
+    manufacturer = None
+    if raw_product_data.get('manufacturerName'):
+        manufacturer = raw_product_data.get('manufacturerName')
+    if not manufacturer:
+        for spec in formatted_specifications:
+            if spec.get('key') == 'Manufacturer':
+                manufacturer = spec.get('value')
+
     product_id = re.search(r'/ip/(\d+)\?', url).group(1)
     blob_product_data = ({
         'id': product_id,
@@ -157,9 +187,10 @@ def extract_product_data(soup: BeautifulSoup, blob: dict, url) -> dict:
         'type': raw_product_data.get('type'),
         'name': title,
         'brand': raw_product_data.get('brand'),
-        'manufacturerName': raw_product_data.get('manufacturerName'),
+        'manufacturerName': manufacturer,
         'shortDescription': formatted_description,
         'specifications': formatted_specifications,
+        "additionalInfo": additional_info
     })
     return blob_product_data
 
@@ -195,9 +226,12 @@ def generate_error_data(w_url, status):
 if __name__ == "__main__":
     print("Walmart Scraping Started\n")
     scrape_list = walmart_url_list_inc
+
     print(f"Scraping {len(scrape_list)} URLs\n ")
-    for walmart_url in scrape_list:
-        soup_data = get_walmart_soup(walmart_url, driver_type='sb')
+    # for walmart_url in scrape_list:
+    walmart_url = scrape_list[1]
+    soup_data = get_walmart_soup(walmart_url, driver_type='re')
+    if soup_data:
         page_status_, json_blob = check_walmart_url_status(soup_data)
         if page_status_ == 200:
             breadcrumbs_text = extract_breadcrumbs(soup_data, json_blob)
@@ -206,5 +240,8 @@ if __name__ == "__main__":
         else:
             product_data = generate_error_data(walmart_url, page_status_)
             print(product_data)
+    else:
+        product_data = generate_error_data(walmart_url, 404)
+        print(product_data)
 
-        push_the_data_to_json(product_data)
+    push_the_data_to_json(product_data)

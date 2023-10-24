@@ -27,7 +27,7 @@ custom_headers = {
     "user-agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36",
 }
 
-output_file_no_duplicates = "../output_files/output_file_no_duplicates.csv"
+output_file_no_duplicates = "amazon_url_list_no_duplicates.csv"
 
 STATUS_MAP = {
     0: "0",
@@ -47,38 +47,45 @@ def get_amazon_url_list():
         return walmart_url_list
 
 
-def get_amazon_soup(url: str, driver_type: str = 're') -> BeautifulSoup:
-    print(f"\n\nScraping Amazon URL: {url}")
-
-    if driver_type == 'uc':
-        chrome_options = uc.ChromeOptions()
+def get_amazon_soup(url: str, driver_type: str = "re") -> BeautifulSoup:
+    """
+    Fetches a BeautifulSoup object for the given Amazon URL using the specified driver type.
+    Returns: BeautifulSoup: Parsed web page content.
+    """
+    print(f"\nScraping Amazon URL: {url}")
+    if driver_type == "uc":
+        chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--headless')
         chrome_options.add_argument("--window-size=3200x20800")
         chrome_options.add_argument('--no-sandbox')
-        with uc.Chrome(enable_cdp_events=True, options=chrome_options, version_main=114) as driver:
+        driver = uc.Chrome(enable_cdp_events=True, options=chrome_options, version_main=114)
+        try:
             driver.get(url)
             soup = BeautifulSoup(driver.page_source, "html.parser")
-    elif driver_type == 're':
+        finally:
+            driver.quit()
+
+    elif driver_type == "re":
         try:
             response = requests.get(url, headers=custom_headers)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, "lxml")
-        except requests.RequestException:
-            print(f"{url} failed")
+        except requests.RequestException as e:
+            print(f"Error scraping {url}: {e}")
             soup = None
+
     else:
-        raise ValueError("Invalid driver type. Use 're' or 'uc'.")
+        raise ValueError(f"Invalid driver type. Use 're' or 'uc'.")
 
     return soup
 
 
 def check_amazon_url_status(soup: Optional[BeautifulSoup]) -> int:
     page_status = 0
-
     messages: Dict[str, Tuple[str, int]] = {
         "Robot or human?": ("Automated Traffic Detected", 999),
-        "Amazon.com": ("Page Error, Change driver", 404),
-        "Amazon.com. Spend less. Smile more.": ("Page Error", 400),
+        "Amazon.com": ("Page Error, Change driver (404)", 404),
+        "Amazon.com. Spend less. Smile more.": ("Page Error, Invalid URL (400)", 400),
     }
     if not soup:
         print("No Soup")
@@ -101,7 +108,7 @@ def check_amazon_url_status(soup: Optional[BeautifulSoup]) -> int:
     return page_status
 
 
-def extract_product_details(soup: BeautifulSoup, url):
+def extract_product_details(soup: BeautifulSoup):
     specifications_b = []
     about_item_items = []
     product_details_section = soup.find('a', id='productFactsToggleButton')
@@ -128,7 +135,7 @@ def extract_product_details(soup: BeautifulSoup, url):
     return specifications_b, about_item_items
 
 
-def extract_product_table(soup: BeautifulSoup, url):
+def extract_product_table(soup: BeautifulSoup):
     product_info = {}
     formatted_product_info = {}
     product_info_section = soup.find('div', id='productDetails_secondary_view_div')
@@ -153,31 +160,48 @@ def extract_product_table(soup: BeautifulSoup, url):
 def extract_product_data(soup: BeautifulSoup, url) -> dict:
     title_element = soup.select_one("#title")
     title = title_element.text.strip() if title_element else None
+
     brand_element = soup.select_one("#bylineInfo")
     brand = brand_element.text.strip() if brand_element else None
+
     formatted_brand = None
     if brand:
         match = re.search(r'(?:Brand:|Visit the )([^<]+)', brand)
         if match:
             formatted_brand = match.group(1).strip()
+
     about_item = []
     for items in soup.find_all("li", attrs={'class': 'a-spacing-mini'}):
         about_item.append(items.text.strip())
+
     description_element = soup.find("div", attrs={'id': 'productDescription_fullView'})
     description = description_element.text.strip() if description_element else None
 
     specifications_element_name = soup.find_all("span", attrs={'class': 'a-size-base a-color-tertiary'})
     specifications_element_value = soup.find_all("span", attrs={'class': 'a-size-base a-color-base'})
+
     specifications = []
     for name, value in zip(specifications_element_name, specifications_element_value):
         name_text = name.text.strip()
         value_text = value.text.strip()
         specifications.append({"key": name_text, "value": value_text})
-    specifications_b = []
-    if len(specifications) < 2:
-        specifications_b, about_item = extract_product_details(soup, url)
-    product_table = extract_product_table(soup, url)
+
+    specifications_additional = []
+    about_item_additional = []
+    if len(specifications) < 1:
+        specifications_additional, about_item_additional = extract_product_details(soup)
+        specifications.extend(specifications_additional)
+    product_table = extract_product_table(soup)
     product_id = re.search(r'/dp/([^?/]+)', url).group(1)
+
+    manufacturer = None
+    if product_table.get('Manufacturer'):
+        manufacturer = product_table.get('Manufacturer')
+    if not manufacturer:
+        for spec in specifications:
+            if spec.get('key') == 'Manufacturer':
+                manufacturer = spec.get('value')
+
     blob_product_data = ({
         'id': product_id,
         'url': url,
@@ -185,11 +209,12 @@ def extract_product_data(soup: BeautifulSoup, url) -> dict:
         'type': "product",
         'name': title,
         'brand': formatted_brand,
-        'manufacturerName': None,
+        'manufacturerName': manufacturer,
         'shortDescription': description,
         'specifications': specifications,
-        'specifications_b': specifications_b,
+        'specifications_b': specifications_additional,
         'aboutItem': about_item,
+        'additionalInfo': about_item_additional,
         'productTable': product_table,
 
     })

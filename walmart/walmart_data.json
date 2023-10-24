@@ -171,5 +171,43 @@
                 "value": "5.91 x 5.91 x 1.57 Inches"
             }
         ]
+    },
+    {
+        "id": "964345122",
+        "url": "https://www.walmart.com/ip/964345122?selected=true",
+        "url_status": "200",
+        "type": "Lingerie Sets",
+        "name": "(Toponeto) Plus Size Sexy Black Lingerie Bra Underpant Set Babydoll Sleepwear Underwear",
+        "brand": "Bowake",
+        "manufacturerName": null,
+        "shortDescription": [],
+        "specifications": [
+            {
+                "key": "Clothing Size",
+                "value": "L"
+            },
+            {
+                "key": "Brand",
+                "value": "Bowake"
+            },
+            {
+                "key": "Assembled Product Weight",
+                "value": "35.27 oz"
+            },
+            {
+                "key": "Color",
+                "value": "Black"
+            },
+            {
+                "key": "Assembled Product Dimensions (L x W x H)",
+                "value": "1.00 x 1.00 x 1.00 Feet"
+            }
+        ]
+    },
+    {
+        "id": "383749436",
+        "url": "https://www.walmart.com/ip/383749436?selected=true",
+        "url_status": 404,
+        "match_type": "Walmart Page Problem"
     }
 ]

@@ -20,19 +20,27 @@ def get_cosine_sim_n(str1, str2):
 
 
 def compare_products_n(product_a, product_b):
-    similarity_score = 0.0
+    similarity_score_ = 0.0
 
-    # Product Name Matching
     if product_a["name"] and product_b["name"]:
-        similarity_score += 2 * get_cosine_sim_n(product_a["name"], product_b["name"])
+        cos_name_score = get_cosine_sim_n(product_a["name"], product_b["name"])
+        similarity_score_ += cos_name_score
+        print("\nProduct Name Matched", cos_name_score)
 
     if product_a["specifications"] and product_b["specifications"]:
         spec_a_ = ' '.join([item["value"] for item in product_a["specifications"]])
         spec_a = spec_a_.join([item["key"] for item in product_a["specifications_b"]])
         spec_b = ' '.join([item["value"] for item in product_b["specifications"]])
-        similarity_score += get_cosine_sim_n(spec_a, spec_b)
+        similarity_score_ += get_cosine_sim_n(spec_a, spec_b)
+        print("Specification Matched", get_cosine_sim_n(spec_a, spec_b))
 
-    return similarity_score / 3
+    if product_a["shortDescription"] and product_b["shortDescription"]:
+        short_desc_a = ' '.join(product_a["shortDescription"])
+        short_desc_b = ' '.join(product_b["shortDescription"])
+        similarity_score_ += get_cosine_sim_n(short_desc_a, short_desc_b)
+        print("Short Description Matched", get_cosine_sim_n(short_desc_a, short_desc_b))
+
+    return similarity_score_ / 3
 
 
 def get_cosine_sim(*strs):
@@ -47,16 +55,18 @@ def get_vectors(*strs):
 
 
 def compare_products(product_a, product_b):
-    similarity_score = 0
+    similarity_score_ = 0
 
     # Brand Matching
     if product_a["brand"].lower() in product_b["name"].lower() or product_b["brand"].lower() in product_a[
         "name"].lower():
-        similarity_score += 1
+        similarity_score_ += 1
+        print("Brand Matched")
 
     # Product Name Matching
     if get_cosine_sim(product_a["name"], product_b["name"]) > 0.5:
-        similarity_score += 1
+        similarity_score_ += 1
+        print("Product Name Matched", get_cosine_sim(product_a["name"], product_b["name"]))
 
     # Short Description Matching
     if isinstance(product_a["shortDescription"], list):
@@ -64,7 +74,7 @@ def compare_products(product_a, product_b):
     else:
         short_desc_a = product_a["shortDescription"]
     if get_cosine_sim(short_desc_a, ' '.join(product_b["shortDescription"])) > 0.6:
-        similarity_score += 1
+        similarity_score_ += 1
 
     # Specification Matching
     spec_a = {item["key"]: item["value"] for item in product_a["specifications_b"]}
@@ -73,14 +83,14 @@ def compare_products(product_a, product_b):
     matching_keys = set(spec_a.keys()) & set(spec_b.keys())
     for key in matching_keys:
         if spec_a[key].lower() == spec_b[key].lower():
-            similarity_score += 1
+            similarity_score_ += 1
 
-    return similarity_score
+    return similarity_score_
 
 
 def dump_the_data_to(p_data):
     try:
-        with open('data.json', 'r') as fp:
+        with open('data_new.json', 'r') as fp:
             data = json.load(fp)
     except (FileNotFoundError, json.JSONDecodeError):
         data = []
@@ -92,7 +102,25 @@ def dump_the_data_to(p_data):
     else:
         data = [p_data]
 
-    with open('data.json', 'w') as fp:
+    with open('data_new.json', 'w') as fp:
+        json.dump(data, fp, indent=4)
+
+
+def dump_the_score_to(p_data):
+    try:
+        with open('score_data.json', 'r') as fp:
+            data = json.load(fp)
+    except (FileNotFoundError, json.JSONDecodeError):
+        data = []
+
+    if isinstance(data, list):
+        data.append(p_data)
+    elif isinstance(data, dict):
+        data = [data, p_data]
+    else:
+        data = [p_data]
+
+    with open('score_data.json', 'w') as fp:
         json.dump(data, fp, indent=4)
 
 
@@ -104,16 +132,23 @@ if __name__ == "__main__":
         amazon_index = walmart_index = i
         amazon_data, walmart_data = scrape_both(amazon_urls, walmart_urls, amazon_index, walmart_index)
         if amazon_data.get('url_status') == '200' and walmart_data.get('url_status') == '200':
-            com_score = compare_products_n(amazon_data, walmart_data)
-            print(com_score)
+            similarity_score = compare_products_n(amazon_data, walmart_data)
+            print(f"Final Score: {similarity_score}")
             data_ = {
                 "amazon_product_id": amazon_data["id"],
                 "walmart_product_id": walmart_data["id"],
                 "amazon_data": amazon_data,
                 "walmart_data": walmart_data,
-                "com_score": com_score
+                "similarity_score": similarity_score
             }
             dump_the_data_to(data_)
+
+            score_data = {
+                "amazon_product_id": amazon_data["id"],
+                "walmart_product_id": walmart_data["id"],
+                "similarity_score": similarity_score
+            }
+            dump_the_score_to(score_data)
 
     # result = conduct_product_comparison(walmart_data, amazon_data)
     # print(result)
