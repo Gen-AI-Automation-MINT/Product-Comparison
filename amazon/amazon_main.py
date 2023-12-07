@@ -20,7 +20,7 @@ import requests
 import re
 from typing import Optional, Dict, Tuple
 from test_data import amazon_url_list_404, walmart_url_list_404, walmart_url_list_inc, amazon_url_list_inc, \
-    walmart_url_list_exa, amazon_url_list_exa
+    walmart_url_list_exa, amazon_url_list_exa, amazon_url_incorrect
 
 custom_headers = {
     "accept-language": "en-GB,en-US;q=0.9,en;q=0.8,kn;q=0.7",
@@ -48,10 +48,6 @@ def get_amazon_url_list():
 
 
 def get_amazon_soup(url: str, driver_type: str = "re") -> BeautifulSoup:
-    """
-    Fetches a BeautifulSoup object for the given Amazon URL using the specified driver type.
-    Returns: BeautifulSoup: Parsed web page content.
-    """
     print(f"\nScraping Amazon URL: {url}")
     if driver_type == "uc":
         chrome_options = webdriver.ChromeOptions()
@@ -251,7 +247,7 @@ def generate_error_data(a_url, status):
 
 if __name__ == "__main__":
     print("Amazon Scraping Started\n")
-    scrape_list = amazon_url_list_inc
+    scrape_list = amazon_url_incorrect
     print(f"Scraping {len(scrape_list)} URLs\n ")
     for amazon_url in scrape_list:
         soup_data = get_amazon_soup(amazon_url, driver_type='re')

@@ -5,7 +5,7 @@ from test_data import amazon_url_list_404, walmart_url_list_404, walmart_url_lis
 
 
 def process_walmart_url(walmart_url):
-    w_soup_data = get_walmart_soup(walmart_url, driver_type='re')
+    w_soup_data = get_walmart_soup(walmart_url, driver_type='sb')
     if w_soup_data:
         w_page_status_, w_json_blob = check_walmart_url_status(w_soup_data)
         if w_page_status_ == 200:

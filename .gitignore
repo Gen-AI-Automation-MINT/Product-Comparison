@@ -183,3 +183,9 @@ fabric.properties
 input_files
 output_files
 chromedriver.exe
+
+data_exa.json
+data_new.json
+incorrect_match_output.csv
+score_data.json
+score_data_exa.json

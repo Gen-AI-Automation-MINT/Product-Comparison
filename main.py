@@ -3,6 +3,7 @@ import json
 import config
 import pandas as pd
 import re
+import csv
 from passing_to_llm import conduct_product_comparison
 from test_data import amazon_url_list_404, walmart_url_list_404, walmart_url_list_inc, amazon_url_list_inc, \
     walmart_url_list_exa, amazon_url_list_exa
@@ -90,7 +91,7 @@ def compare_products(product_a, product_b):
 
 def dump_the_data_to(p_data):
     try:
-        with open('data_new.json', 'r') as fp:
+        with open('data_exa.json', 'r') as fp:
             data = json.load(fp)
     except (FileNotFoundError, json.JSONDecodeError):
         data = []
@@ -102,13 +103,13 @@ def dump_the_data_to(p_data):
     else:
         data = [p_data]
 
-    with open('data_new.json', 'w') as fp:
+    with open('data_exa.json', 'w') as fp:
         json.dump(data, fp, indent=4)
 
 
 def dump_the_score_to(p_data):
     try:
-        with open('score_data.json', 'r') as fp:
+        with open('score_data_exa.json', 'r') as fp:
             data = json.load(fp)
     except (FileNotFoundError, json.JSONDecodeError):
         data = []
@@ -120,19 +121,34 @@ def dump_the_score_to(p_data):
     else:
         data = [p_data]
 
-    with open('score_data.json', 'w') as fp:
+    with open('score_data_exa.json', 'w') as fp:
         json.dump(data, fp, indent=4)
 
 
 if __name__ == "__main__":
     amazon_urls = amazon_url_list_inc
     walmart_urls = walmart_url_list_inc
-    # amazon_index = walmart_index = 20
-    for i in range(len(amazon_urls)):
+    walmart_url_exact = []
+    comp_url_exact = []
+    walmart_url_incorrect = []
+    comp_url_incorrect = []
+    with open('input_files/urls.csv', 'r') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        for row in csv_reader:
+            if row['Match_Type'] == 'Exact Match':
+                walmart_url_exact.append(row['Walmart_Url'])
+                comp_url_exact.append(row['Comp_Url'])
+            if row['Match_Type'] == 'Incorrect Match':
+                walmart_url_incorrect.append(row['Walmart_Url'])
+                comp_url_incorrect.append(row['Comp_Url'])
+    print("Will be Processing: ", len(walmart_url_exact), len(comp_url_exact))
+    for i in range(len(comp_url_exact)):
+        print(f"Index: {i}")
         amazon_index = walmart_index = i
-        amazon_data, walmart_data = scrape_both(amazon_urls, walmart_urls, amazon_index, walmart_index)
+        amazon_data, walmart_data = scrape_both(comp_url_exact, walmart_url_exact, amazon_index, walmart_index)
         if amazon_data.get('url_status') == '200' and walmart_data.get('url_status') == '200':
             similarity_score = compare_products_n(amazon_data, walmart_data)
+
             print(f"Final Score: {similarity_score}")
             data_ = {
                 "amazon_product_id": amazon_data["id"],
