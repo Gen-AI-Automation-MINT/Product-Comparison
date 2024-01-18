@@ -186,6 +186,6 @@ chromedriver.exe
 
 data_exa.json
 data_new.json
-incorrect_match_output.csv
-score_data.json
-score_data_exa.json
+output_files/incorrect_match_output.csv
+output_files/score_data.json
+output_files/score_data_exa.json

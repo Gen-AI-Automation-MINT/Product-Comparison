@@ -2,7 +2,7 @@ import pandas as pd
 
 input_file = "input_files/input_file_id.xlsx"
 output_file = 'output_files/output_file_id.csv'
-output_file_no_duplicates = 'output_files/output_file_no_duplicates.csv'
+output_file_no_duplicates = 'output_files/urls.csv'
 
 
 def add_urls_to_excel(input_file_id, output_file_withurl):
@@ -20,8 +20,10 @@ def remove_duplicate_rows(input_file_withurl, output_removed_duplicates):
         df = pd.read_csv(input_file_withurl)
     else:
         raise ValueError("Unsupported file format. Only Excel (.xlsx) and CSV (.csv) files are supported.")
-    df.drop_duplicates(subset=['item_id'], keep='first', inplace=True)
-    df.drop_duplicates(subset=['retailer_id'], keep='first', inplace=True)
+
+    # Removing duplicates based on a combination of 'item_id' and 'retailer_id'
+    df.drop_duplicates(subset=['item_id', 'retailer_id'], keep='first', inplace=True)
+
     if output_removed_duplicates.endswith('.xlsx'):
         df.to_excel(output_removed_duplicates, index=False)
     elif output_removed_duplicates.endswith('.csv'):

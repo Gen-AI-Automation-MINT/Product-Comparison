@@ -8,6 +8,7 @@ import json
 import re
 from test_data import amazon_url_list_404, walmart_url_list_404, walmart_url_list_inc, amazon_url_list_inc, \
     walmart_url_list_exa, amazon_url_list_exa, walmart_url_incorrect
+from config import scrapeops_api_key
 
 from seleniumbase import Driver
 
@@ -44,7 +45,7 @@ def get_walmart_soup(url: str, driver_type: str = 'uc') -> BeautifulSoup:
             scrapeops_response = requests.get(
                 url='https://proxy.scrapeops.io/v1/',
                 params={
-                    'api_key': '14355e00-a2df-4040-b577-11c254784e0f',  # Replace with your actual API key
+                    'api_key': scrapeops_api_key,
                     'url': url,
                 },
             )
@@ -226,34 +227,26 @@ def generate_error_data(w_url, status):
     }
 
 
-driver = Driver(uc=True)
-if __name__ == "__main__":
-    # walmart_url_i = []
-    # with open('../input_files/urls.csv', 'r') as csv_file:
-    #     csv_reader = csv.DictReader(csv_file)
-    #     for row in csv_reader:
-    #         if row['Match_Type'] == 'Not Sure':
-    #             walmart_url_i.append(row['Walmart_Url'])
-    print("Walmart Scraping Started\n")
-    scrape_list = walmart_url_incorrect
-
-    print(f"Scraping {len(scrape_list)} URLs\n ")
-    for walmart_url in scrape_list:
-        # walmart_url = scrape_list[1]
-        driver.get(walmart_url)
-        soup_data = BeautifulSoup(driver.page_source, 'html.parser')
-        # soup_data = get_walmart_soup(walmart_url, driver_type='sb')
-        if soup_data:
-            page_status_, json_blob = check_walmart_url_status(soup_data)
-            if page_status_ == 200:
-                breadcrumbs_text = extract_breadcrumbs(soup_data, json_blob)
-                product_data = extract_product_data(soup_data, json_blob, walmart_url)
-                print(product_data)
-            else:
-                product_data = generate_error_data(walmart_url, page_status_)
-                print(product_data)
-        else:
-            product_data = generate_error_data(walmart_url, 404)
-            print(product_data)
-
-        push_the_data_to_json(product_data)
+# driver = Driver(uc=True)
+# if __name__ == "__main__":
+#     print("Walmart Scraping Started\n")
+#     scrape_list = walmart_url_incorrect
+#     print(f"Scraping {len(scrape_list)} URLs\n ")
+#     for walmart_url in scrape_list:
+#         driver.get(walmart_url)
+#         # soup_data = BeautifulSoup(driver.page_source, 'html.parser')
+#         soup_data = get_walmart_soup(walmart_url, driver_type='sb')
+#         if soup_data:
+#             page_status_, json_blob = check_walmart_url_status(soup_data)
+#             if page_status_ == 200:
+#                 breadcrumbs_text = extract_breadcrumbs(soup_data, json_blob)
+#                 product_data = extract_product_data(soup_data, json_blob, walmart_url)
+#                 print(product_data)
+#             else:
+#                 product_data = generate_error_data(walmart_url, page_status_)
+#                 print(product_data)
+#         else:
+#             product_data = generate_error_data(walmart_url, 404)
+#             print(product_data)
+#
+#         push_the_data_to_json(product_data)
