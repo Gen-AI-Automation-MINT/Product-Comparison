@@ -1,4 +1,14 @@
-#   
+# Mint Project Automation
+
+Main file:
+
+`main.py` has `process_urls.py` which will use both Amazon and Walmart modules.
+
+Place the input file and run `generate_file.py` to generate the output file.
+
+
+
+
 
 Main Files of Amazon:
 
